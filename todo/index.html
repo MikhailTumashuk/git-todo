@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>To-do list</title>
+    <link rel="shortcut icon" href="icon.svg" type="image/x-icon" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <!-- <button onclick="test()">Тест</button> -->
+    <div class="container">
+        <h1>Заметки</h1>
+        <!-- Навигация по вкладкам -->
+        <nav id="tabs" class="tabs_items tabs"></nav>
+        <!-- Тело вкладок -->
+        <div id="elements" class="tabs_block tabs_body"></div>
+        <!-- Панель с кнопками настроек и инпутом -->
+        <div class="input-panel">
+            <!-- Выдвигаемые таблички -->
+            <div>
+                <!-- !: обернул в див так как нужно сделать панель на фоне-->
+                <!-- <div class="settings_panel">
+                    <button id="font_btn" onclick="PopUp('font_menu'); PopUpHide('color_menu')"></button>
+                    <button id="color_btn" onclick="PopUp('color_menu'); PopUpHide('font_menu')"></button>
+                </div> -->
+            </div>
+            <div class="settings-buttons-container">
+                <!-- Кнопка настроек (при наведении выбор цвета и начертания текста заметки) -->
+                <!-- <div id="settings_btn" onclick="PopUp('settings_menu')"></div> -->
+                <div class="popup">
+                    <div class="secondary-popup border-block">
+                        <table>
+                            <tr>
+                                <!-- !: добавил id кнопкам -->
+                                <td>
+                                    <div id="bold_btn" onclick="changeFont(0)"></div>
+                                </td>
+                                <td>
+                                    <div id="strike_btn" onclick="changeFont(1)"></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div id="underline_btn" onclick="changeFont(2)"></div>
+                                </td>
+                                <td>
+                                    <div id="italic_btn" onclick="changeFont(3)"></div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="secondary-popup border-block">
+                        <table>
+                            <tr>
+                                <td>
+                                    <button class="round" color="#F84B6B" onclick="changeColor(this)"></button>
+                                </td>
+                                <td>
+                                    <button class="round" color="#FFB653" onclick="changeColor(this)"></button>
+                                </td>
+                                <td>
+                                    <button class="round" color="#FAFF00" onclick="changeColor(this)"></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <button class="round" color="#11D786" onclick="changeColor(this)"></button>
+                                </td>
+                                <td>
+                                    <button class="round" color="#18B9F8" onclick="changeColor(this)"></button>
+                                </td>
+                                <td>
+                                    <button class="round" color="#1228EC" onclick="changeColor(this)"></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <button class="round" color="#7448F1" onclick="changeColor(this)"></button>
+                                </td>
+                                <td>
+                                    <button class="round" color="#F92E97" onclick="changeColor(this)"></button>
+                                </td>
+                                <td>
+                                    <button class="round" color="#343A3F" onclick="changeColor(this)"></button>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="ico-block">
+                        <div class="color_btn"></div>
+                    </div>
+                    <div class="ico-block">
+                        <div class="font_btn"></div>
+                    </div>
+                </div>
+                <div class="ico-block">
+                    <div class="settings_btn"></div>
+                </div>
+            </div>
+            <!-- Блок с полем ввода и выбором числа звезд -->
+            <div class="user_input">
+                <textarea class="input_elements" type="text" id="input_to_do" placeholder="Введите текст заметки"></textarea>
+                <div id="star_input_div" class="input_stars"></div>
+            </div>
+            <!-- Кнопка ввода заметки -->
+            <button id="enter_btn" onclick="createElement1()"></button>
+        </div>
+    </div>
+</body>
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="script.js"></script>
+
+</html>

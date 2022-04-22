@@ -1,0 +1,478 @@
+@import url("https://fonts.googleapis.com/css2?family=Comfortaa&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Rubik&display=swap");
+html {
+    background: linear-gradient( 116.83deg, rgba(54, 255, 167, 0.2) 0.55%, rgba(229, 134, 206, 0.2) 100%), linear-gradient(179.06deg, #62ebc0 -5.97%, #5b46e7 125.73%);
+}
+
+body {
+    padding-top: 10vh;
+    padding-bottom: 10vh;
+    overflow: hidden;
+}
+
+.container {
+    background: linear-gradient(90deg, #abe9ee 0%, #c3ffde 70.13%, #c9d7fa 100%);
+    display: flex;
+    flex-direction: column;
+    max-width: 866px;
+    height: 80vh;
+    margin-top: 10vh;
+    margin-bottom: 10vh;
+    left: 287px;
+    border: 4px solid rgba(255, 255, 255, 0.75);
+    border-radius: 20px;
+    margin: 0 auto;
+    padding: 0 auto;
+}
+
+h1 {
+    font-family: "Rubik", sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 48px;
+    color: #343a3f;
+    margin: 0 auto;
+    margin-top: 24px;
+    max-width: 218px;
+}
+
+.tabs_item {
+    border-bottom: none;
+    background: #A3C0FE;
+    border-top: 2px solid #7f9bfd;
+    border-right: 2px solid #7f9bfd;
+    border-left: 2px solid #7f9bfd;
+    border-radius: 20px 50px 0 0;
+    width: 180px;
+    height: 46px;
+    text-align: center;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.tabs_selected {
+    background: #ffffff;
+}
+
+.tabs_items {
+    display: flex;
+}
+
+
+/* Первая вкладка */
+
+.tab_text {
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    margin-left: -6px;
+    font-weight: 700;
+    font-size: 22px;
+    line-height: 25px;
+    background: #ffffff;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family: "Comfortaa";
+}
+
+.tab_selected_text {
+    background: linear-gradient(#69d1ff -7.41%, #8d77fb 100%);
+    -webkit-background-clip: text;
+}
+
+
+/* кнопка открытия новой вкладки*/
+
+#new_tab {
+    background-image: url("assets/newTab1.svg");
+    background-position: center;
+    background-repeat: no-repeat;
+    border-top: 2px solid #7f9bfd;
+    border-right: 2px solid #7f9bfd;
+    border-left: 2px solid #7f9bfd;
+    border-top-right-radius: 50px;
+    border-top-left-radius: 30px;
+    width: 86px;
+    height: 46px;
+    z-index: 0;
+}
+
+.tabs_body {
+    /* height: 80vh; */
+    background-color: #ffffff;
+    flex-grow: 1;
+    /* скролл бар */
+    overflow-y: scroll;
+}
+
+.input-panel {
+    display: flex;
+    align-items: end !important;
+    margin: 0;
+    box-sizing: border-box;
+    max-width: 865px;
+    /* в фигме 111 но пока сделаю 97 потому что иначе элементы не будут выровнены по середине
+    input-panel а ставим align-items end чтобы настроки popup поднимались вверх иначе 
+    когда align items center после расширения блок в настройками выравнивается посередине*/
+    /* height: 111px; */
+    height: 97px;
+    padding: 17px;
+}
+
+.ico-block {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 59px;
+    width: 64px;
+}
+
+.popup {
+    /* изначально скрываем выпадающее меню настроек */
+    display: none;
+}
+
+
+/* у .ico-block с иконкой настроек нужно уменьшить высоту на 4px что равно сумме верхнего и 
+нижнего border у sttings-buttons-container */
+
+.popup+.ico-block {
+    height: 55px;
+}
+
+.settings-buttons-container {
+    /* для того чтобы относительно этого элемента позиционировать  */
+    /* выпадающие настройки шрифта и цвета */
+    position: relative;
+    border: 2px solid #72bbfe;
+    background-color: #ffffff;
+    border-radius: 12px;
+    margin-left: 14px;
+    width: 64px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.settings_btn {
+    background: center no-repeat url("assets/settings.svg") #ffffff;
+    width: 34px;
+    height: 31px;
+}
+
+.font_btn {
+    background: center no-repeat url("assets/font.svg") #ffffff;
+    width: 28px;
+    height: 36px;
+}
+
+.color_btn {
+    background: center no-repeat url("assets/color.svg") #ffffff;
+    width: 35px;
+    height: 38px;
+}
+
+
+/* #font_btn {
+    background-image: url("assets/settings_panel/outline_button.svg");
+    display: block;
+    min-width: 60px;
+    height: 59px;
+    border-radius: 12px;
+    border: none;
+    background-color: #ffffff;
+} */
+
+
+/* #font_btn:hover {
+    background-image: url("assets/settings_panel/outline_button_hover.svg");
+} */
+
+
+/* #color_btn {
+    background-image: url("assets/settings_panel/choose_color_button.svg");
+    display: block;
+    min-width: 60px;
+    height: 55px;
+    border-radius: 12px;
+    border: none;
+    /* margin-top: 4px; */
+
+
+/* } */
+
+*/ .color_btn:hover {
+    background-image: url("assets/settings_panel/choose_color_button_hover.svg");
+}
+
+#enter_btn {
+    background-image: url("assets/enter.svg");
+    display: block;
+    min-width: 64px;
+    height: 59px;
+    border-radius: 12px;
+    border: none;
+}
+
+#input_to_do {
+    /* ! flex-grow */
+    position: relative;
+    /* ниже строчка нужно чтобы граница border 
+    справа слилась с границей соседнего эл-а */
+    left: 2px;
+    padding: 16px 10px 10px 30px;
+    outline: none;
+    resize: none;
+    flex-grow: 1;
+    width: 100%;
+    height: 58px;
+    font-family: "Comfortaa";
+    font-style: normal;
+    font-weight: 500;
+    font-size: 22px;
+    line-height: 25px;
+    color: rgba(52, 58, 63, 0.64);
+    border: 2px solid #72bbfe;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    /* тк сдвинули блок влево на 2px уменьшим маржин чтобы сохранить прежний размер */
+    /* margin-left: 10px; */
+    margin-left: 8px;
+    box-sizing: border-box;
+}
+
+.user_input {
+    flex-grow: 1;
+    display: flex;
+    align-items: end;
+}
+
+.input_stars {
+    min-width: 132px;
+    height: 51px;
+    padding-left: 6px;
+    background-color: #ffffff;
+    border: 2px solid #72bbfe;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    /* отключаем перенос звёзд. если задать width не работает. */
+    margin-left: auto;
+    /* выравнивание по правому краю */
+    font-size: 0px;
+    margin-right: 5px;
+    /* на глаз */
+    padding-top: 3px;
+    /* на глаз чтобы выровнять отн-о текста */
+}
+
+.input_star_img {
+    margin-top: 12px;
+}
+
+#star_1 {
+    margin-left: 6px;
+}
+
+.tabs_block {
+    padding-top: 23px;
+    padding-left: 17px;
+}
+
+.listElement {
+    /* background: rgb(204, 231, 251); */
+    background: linear-gradient( 90deg, rgba(204, 231, 251, 1) 0%, rgba(177, 253, 235, 1) 100%);
+    box-sizing: border-box;
+    max-width: 800px;
+    min-height: 60px;
+    border-radius: 10px;
+    display: flex;
+    padding: 16px 47px 16px 11px;
+    font-family: "Comfortaa";
+    font-style: normal;
+    font-weight: 400;
+    font-size: 21px;
+    color: #343a3f;
+    margin: 10px;
+    /* 16px справа - отспут до корзины - на глаз */
+}
+
+.listElDate {
+    margin-right: 30px;
+}
+
+.listElText {
+    margin-right: 14px;
+    word-wrap: break-word;
+    max-width: 66%;
+    /* на глаз тк по макету не понятно там разные зн-я всегда*/
+}
+
+.listElStars {
+    display: block;
+    min-width: 102px;
+    /* отключаем перенос звёзд. если задать width не работает. */
+    margin-left: auto;
+    /* выравнивание по правому краю */
+    /* Энтер в коде воспринимается в html то есть при отрисоке сайта
+    как пробел, поэтому чтобы убрать пробел между звёздами поставим размер шрифта
+    а тем самым и размер пробела - 0 пикселей  */
+    font-size: 0px;
+    margin-right: 5px;
+    /* на глаз */
+    padding-top: 3px;
+    /* на глаз чтобы выровнять отн-о текста */
+}
+
+.starImg {
+    width: 20px;
+    height: 19px;
+}
+
+.trashImgDiv {
+    box-sizing: border-box;
+    padding-top: 2px;
+    /* на глаз чтобы выровнять отн-о текста */
+    display: none;
+    /* убрать */
+}
+
+.trashImg {
+    margin-top: -2.5px;
+    width: 23px;
+    height: 25px;
+}
+
+.listElement:hover .trashImgDiv {
+    display: block;
+    /* включаем отображение */
+}
+
+.listElement:hover {
+    padding: 16px 24px 14px 11px;
+    /* 24px справа - отспут до корзины - на глаз 
+    ещё уменьшили нижний паддинг с 16 до 14 тк иначе корзина делает блок 
+    listElement более высоким т.е. расширяет элемент списка при наведении
+    что некрасиво*/
+}
+
+
+/* стили скролл-бара */
+
+#tabs_container::-o-scrollbar {
+    width: 11px;
+    background-color: #F6F9FF;
+    border-radius: 7px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+#tabs_container::-o-scrollbar-thumb {
+    background-color: #8ed7e7;
+    border-radius: 7px;
+}
+
+#tabs_container::-webkit-scrollbar {
+    width: 11px;
+    background-color: #F6F9FF;
+    border-radius: 7px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+#tabs_container::-webkit-scrollbar-thumb {
+    background-color: #8ed7e7;
+    border-radius: 7px;
+}
+
+.secondary-popup {
+    justify-content: space-around;
+    position: absolute;
+    /* 100% ширины блока и отступ 14 px */
+    left: calc(14px + 100%);
+    /* чтобы перекрыть остальое */
+    z-index: 2000;
+    /* margin-left: 14px; */
+}
+
+.round {
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+}
+
+
+/* *: Новый css */
+
+
+/* стиль для верхней, выдвигающейся части */
+
+
+/* .settings_panel {
+    background-color: #ffffff;
+    border: 2px #93b6fc solid;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom: none;
+    height: 123px;
+    margin-top: 55px;
+    /* padding-bottom: 20px; */
+
+
+/* }  */
+
+
+/* стили начертания */
+
+.border-block {
+    border: 2px #93b6fc solid;
+    background-color: #ffffff;
+    border-radius: 10px;
+}
+
+#bold_btn {
+    background-image: url("assets/settings_panel/outline_button.svg");
+    display: block;
+    min-width: 60px;
+    height: 59px;
+    border-radius: 12px;
+    border: none;
+    background-color: #ffffff;
+}
+
+#strike_btn {
+    background-image: url("assets/settings_panel/strike.svg");
+    display: block;
+    min-width: 60px;
+    height: 59px;
+    border-radius: 12px;
+    border: none;
+    background-color: #ffffff;
+}
+
+#underline_btn {
+    background-image: url("assets/settings_panel/underline.svg");
+    display: block;
+    min-width: 60px;
+    height: 59px;
+    border-radius: 12px;
+    border: none;
+    background-color: #ffffff;
+}
+
+#italic_btn {
+    background-image: url("assets/settings_panel/italic.svg");
+    display: block;
+    min-width: 60px;
+    height: 59px;
+    border-radius: 12px;
+    border: none;
+    background-color: #ffffff;
+}
+
+.round {
+    display: block;
+    min-width: 40px;
+    height: 40px;
+    border: none;
+    margin: 2px;
+}
