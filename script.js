@@ -1,6 +1,11 @@
 // все вкладки TabData
 const tabs = [];
 
+// TODO: Пофиксить баг: если быстро перейти на одну вкладку и обратно система думает что был дабл клик
+// по вкладке
+// наложение вкладок
+// правильная нумерация при создании вкладки
+
 // вкладка
 class TabData {
     constructor(name, elements) {
@@ -66,7 +71,7 @@ class TabData {
                     var now = new Date().getTime();
                     var lastClicked = sessionStorage.getItem(uuid);
                     if (lastClicked && (now - lastClicked < 450)) {
-                        event.preventDefault();
+                        event.preventDefault(); // отменить стандартное действие
                         alert('uraa')
                     } else {
                         // создаём запись в сессионное хранилище о времени клика на определённую
@@ -86,7 +91,6 @@ class TabData {
 
     }
 
-    // сортировка
     sort() {
         this.elements.sort(TaskData.compare);
         let i = 0;
@@ -96,6 +100,8 @@ class TabData {
         });
     }
 }
+
+
 //заметка
 class TaskData {
     constructor(date, value, stars, color, bold, strike, underline, italic) {
@@ -123,28 +129,18 @@ class TaskData {
 
     //создать заметку
     displayTasks(tab) {
-        var context = '<div class="listElement" id="listElement_' + this.uuid + '">';
-
+        
         //month
         var day = this.day;
         if (day < 10) {
             day = "0" + day;
         }
-
+        
         var month = this.month + 1;
         if (month < 10) {
             month = "0" + month;
         }
-
-        context +=
-            `<span style="min-width: 9vh;" class="listElDate">${day}.${month}.${(this.year - 2000)}</span>`;
-
-        context +=
-            '<span class="listElText" id="listElText' +
-            this.uuid +
-            '" style="min-width: 54vh; max-width: 54vh; color:' +
-            this.color +
-            '";>';
+        
         let format = this.value;
         format = format.replaceAll("\n", "<br>");
         if (this.bold) {
@@ -161,23 +157,22 @@ class TaskData {
         }
         context += format + "</span>";
 
-        //stars
-        context += '<div class="listElStars">';
-        context += this.fillStarts(tab);
-        context += "</div>";
+        var context = 
+        `<div class="listElement" id="listElement_${this.uuid}">
+            <span style="min-width: 9vh;" class="listElDate">${day}.${month}.${(this.year - 2000)}</span>
+            <span class="listElText" id="listElText${this.uuid}" 
+                style="min-width: 54vh; max-width: 54vh; color:${this.color}">
+                ${format}
+            </span>
+            <div class="listElStars">
+                ${this.fillStarts(tab)}
+            </div>
+            <div class="trashImgDiv">
+                <img class="trashImg" src="assets/trash.svg" alt="" 
+                    onclick="removeTask(${tab},${this.uuid})">
+            </div>
+        </div>`;
 
-        //trash
-        context +=
-            '<div class="trashImgDiv">' +
-            '<img class="trashImg" src="assets/trash.svg" alt="" onclick="removeTask(' +
-            tab +
-            ',' +
-            this.uuid +
-            ')">' +
-            "</div>";
-
-        //end
-        context += "</div>";
         $("#elements").append(context);
     }
 
@@ -186,21 +181,11 @@ class TaskData {
         let context = "";
         for (var i = 0; i < 5; i++) {
             let arg =
-                '<img class="starImg" alt="" onclick="clickOnStarElement(' +
-                tabId +
-                "," +
-                this.uuid +
-                "," +
-                (i + 1) +
-                ')" ';
-            if (i < this.stars) {
-                // заполненая звезда
-                arg += 'src="assets/paintedStar.svg"';
-            } else {
-                // пустая звезда
-                arg += 'src="assets/star.svg"';
-            }
-            arg += ">";
+                `<img class="starImg" alt="" 
+                    onclick="clickOnStarElement(${tabId}, ${this.uuid}, ${i+1})" 
+                    ${ i< this.stars? ' src="assets/paintedStar.svg"' : 
+                    ' src="assets/star.svg"'}
+                >`;
             context += arg;
         }
         return context;
@@ -351,14 +336,15 @@ function createTab() {
     $("#tabs").html("");
     $("#elements").html("");
     let i = 0;
-    tabs.forEach(el => {
-        var tabName = el.name;
-        var regex = /Вкладка (\d+)/
-        console.log(tabName)
-        if (regex.exec(tabName) != undefined)
-            console.log(regex.exec(tabName))
-    });
-    new TabData(('Вкладка ' + (i + 1).toString()), []).displayTasks();
+    var lastTabName = tabs[tabs.length-1].name;
+
+    // Ищем вкладку с цифрой, отдельной группой выделяем само число после слова Вкладка
+    var regex = /Вкладка (\d+)/
+    if (regex.exec(lastTabName) != undefined) {
+        //  i - число после слова Вкладка
+        i = parseInt(regex.exec(lastTabName)[1])
+    }
+    new TabData(('Вкладка ' + (++i)), []).displayTasks();
     selectTab(tabs.length - 1);
     save();
 }
@@ -480,7 +466,7 @@ function load() {
     while (elements.length > 0) {
         elements.pop();
     }
-    items = JSON.parse(window.localStorage.getItem("toDo"));
+    items = JSON.parse(window.localStorage.getItem("tasksData"));
 
     if (items == null) {
         return;
@@ -502,13 +488,13 @@ function load() {
             v.time = element.time;
             tabElements.push(v);
         })
-        new TabData(element.text, tabElements);
+        new TabData(element.name, tabElements);
     });
     selectTab(0);
 }
 //сохранение
 function save() {
-    window.localStorage.setItem("toDo", JSON.stringify(tabs));
+    window.localStorage.setItem("tasksData", JSON.stringify(tabs));
 }
 //для чтения
 function date(year, month, day) {
