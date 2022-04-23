@@ -14,7 +14,7 @@ body {
     background: linear-gradient(90deg, #abe9ee 0%, #c3ffde 70.13%, #c9d7fa 100%);
     display: flex;
     flex-direction: column;
-    max-width: 866px;
+    max-width: 865px;
     height: 80vh;
     margin-top: 10vh;
     margin-bottom: 10vh;
@@ -132,11 +132,9 @@ h1 {
     display: none;
 }
 
-
 /* у .ico-block с иконкой настроек нужно уменьшить высоту на 4px что равно сумме верхнего и 
 нижнего border у sttings-buttons-container */
-
-.popup+.ico-block {
+.popup + .ico-block {
     height: 55px;
 }
 
@@ -150,6 +148,7 @@ h1 {
     margin-left: 14px;
     width: 64px;
     box-sizing: border-box;
+
     display: flex;
     flex-direction: column;
 }
@@ -172,7 +171,6 @@ h1 {
     height: 38px;
 }
 
-
 /* #font_btn {
     background-image: url("assets/settings_panel/outline_button.svg");
     display: block;
@@ -183,11 +181,9 @@ h1 {
     background-color: #ffffff;
 } */
 
-
 /* #font_btn:hover {
     background-image: url("assets/settings_panel/outline_button_hover.svg");
 } */
-
 
 /* #color_btn {
     background-image: url("assets/settings_panel/choose_color_button.svg");
@@ -197,11 +193,9 @@ h1 {
     border-radius: 12px;
     border: none;
     /* margin-top: 4px; */
+/* } */ */
 
-
-/* } */
-
-*/ .color_btn:hover {
+.color_btn:hover {
     background-image: url("assets/settings_panel/choose_color_button_hover.svg");
 }
 
@@ -384,13 +378,19 @@ h1 {
     border-radius: 7px;
 }
 
-.secondary-popup {
-    justify-content: space-around;
+.secondary-popup-hover-area {
     position: absolute;
-    /* 100% ширины блока и отступ 14 px */
-    left: calc(14px + 100%);
-    /* чтобы перекрыть остальое */
+    left: calc(100%);
     z-index: 2000;
+    padding-left: 14px;
+}
+
+.secondary-popup {
+    /* js поменяет зн-е снизу */
+    display: none;
+    justify-content: space-around;
+    /* 100% ширины блока и отступ 14 px */
+    /* чтобы перекрыть остальое */
     /* margin-left: 14px; */
 }
 
@@ -402,11 +402,7 @@ h1 {
 
 
 /* *: Новый css */
-
-
 /* стиль для верхней, выдвигающейся части */
-
-
 /* .settings_panel {
     background-color: #ffffff;
     border: 2px #93b6fc solid;
@@ -416,9 +412,8 @@ h1 {
     height: 123px;
     margin-top: 55px;
     /* padding-bottom: 20px; */
-
-
 /* }  */
+
 
 
 /* стили начертания */

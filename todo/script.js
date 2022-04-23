@@ -1,109 +1,80 @@
-//debug забейте
-function test() {
-    new TabData("Тест" + tabs.length, [
-        new TaskData(date(2021, 6, 8), "Старая заметка из js", 3, 'black', false, false, false, false),
-        new TaskData(new Date(), "Новая заметка из js", 3, 'black', true, false, false, false),
-        new TaskData(new Date(), "Заметка из класса", 2, 'red', false, false, false, false)
-    ]).create();
-    save();
-}
+// все вкладки TabData
+const tabs = [];
 
 // вкладка
 class TabData {
-
-    constructor(text, elements) {
-        //забейте
+    constructor(name, elements) {
         this.uuid = tabs.length;
-        //номер вкладки
-        this.text = text;
+        //название вкладки
+        this.name = name;
         //заметки
         this.elements = elements;
         //автодобавление в массив
         tabs.push(this);
         //добавление html кнопку со вкладкой
-        this.fill(false);
+        this.createTab(false);
     }
 
     //заполнение страницы заметками
-    create() {
+    displayTasks() {
+        // строка ниже не бесполезна
         $("#elements").html("");
         let i = 0;
+        // строка ниже не бесполезна
         this.sort();
+
         this.elements.forEach(value => {
             value.uuid = i;
-            value.create(this.uuid);
+            value.displayTasks(this.uuid);
             i++;
         });
     }
 
     // удаление заметки
     removeTask(uuid) {
-        array = [];
-        change = false;
-
-        this.elements.forEach((element) => {
-            if (change || element.uuid != uuid) {
-                if (change) {
-                    element.uuid -= 1;
-                }
-                array.push(element);
-            } else {
-                change = true;
-            }
-        });
-
-        if (change) {
-            while (this.elements.length > 0) {
-                this.elements.pop();
-            }
-
-            array.forEach((element) => {
-                this.elements.push(element);
-            });
-
-            this.create();
-            save();
-        }
+        this.elements.splice(uuid, 1);
+        this.displayTasks();
+        save();
     }
 
     // изменение звезд на заметке
     clickOnStar(uuid, id) {
-        let bl = false;
-        this.elements.forEach((element) => {
-            if (element.uuid == uuid) {
-                let stars = element.stars;
-                element.clickOnStar(id);
-                let n = element.stars;
-                if (n != stars) {
-                    bl = true;
-                }
-            }
-        });
-        if (bl) {
-            this.create();
-            save();
-        }
+        this.elements[uuid].stars = id;
+        this.displayTasks();
+        save();
     }
 
     // кнопка со вкладкой
-    fill(selected) {
-        var context = '<button id="tab_' + this.uuid + '" uuid=' + this.uuid + ' class="tabs_item';
-        if (selected) {
-            context += ' tabs_selected';
-        }
-        context += '"><p class="tab_text'
-        if (selected) {
-            context += ' tab_selected_text';
-        }
-        context += '">Вкладка ';
-        context += this.text + '</p></button>';
+    createTab(selected) {
+        var context = `
+        <button  id="tab_${this.uuid}" uuid=${this.uuid} 
+        class="tabs_item${selected ? ' tabs_selected': ''}">
+            <p class="tab_text${selected ? " tab_selected_text" : ""}">
+                ${this.name}
+            </p>
+        </button>`;
         $("#tabs").append(context);
-        $('#tab_' + this.uuid).mousedown(function(event) {
+
+        // обработка нажатия на вкладку
+        $('#tab_' + this.uuid).mousedown(function (event) {
             let uuid = this.getAttribute('uuid');
             switch (event.which) {
+                // если click
                 case 1:
                     selectTab(uuid);
+                    // обрабатываем дабл клик
+                    var now = new Date().getTime();
+                    var lastClicked = sessionStorage.getItem(uuid);
+                    if (lastClicked && (now - lastClicked < 450)) {
+                        event.preventDefault();
+                        alert('uraa')
+                    } else {
+                        // создаём запись в сессионное хранилище о времени клика на определённую
+                        // вкладку
+                        sessionStorage.setItem(uuid, now.toString())
+                    }
                     break;
+                    // если right click
                 case 3:
                     let confir = confirm('Удалить вкладку ' + this.firstChild.innerHTML);
                     if (confir) {
@@ -113,25 +84,6 @@ class TabData {
             }
         });
 
-
-        // jQuery(document).ready(function($) {
-
-
-        // })
-
-        // $('#tab_' + this.uuid).dbclick(function(event) {
-        //     alert("afeqf");
-        // let uuid = this.getAttribute('uuid');
-        // var input = document.createElement("input");
-        // selectTab(uuid);
-        // input.className = "tab_name";
-        // tab_text.append(input);
-
-        // context
-
-        // });
-        // // ! редактирование названия вкладки
-        // console.log("пиппц"); 
     }
 
     // сортировка
@@ -170,7 +122,7 @@ class TaskData {
     }
 
     //создать заметку
-    create(tab) {
+    displayTasks(tab) {
         var context = '<div class="listElement" id="listElement_' + this.uuid + '">';
 
         //month
@@ -185,13 +137,7 @@ class TaskData {
         }
 
         context +=
-            '<span style="min-width: 9vh;" class="listElDate">' +
-            day +
-            "." +
-            month +
-            "." +
-            (this.year - 2000) +
-            "</span>";
+            `<span style="min-width: 9vh;" class="listElDate">${day}.${month}.${(this.year - 2000)}</span>`;
 
         context +=
             '<span class="listElText" id="listElText' +
@@ -260,23 +206,6 @@ class TaskData {
         return context;
     }
 
-    // метод обсчитывающий звезды при нажатии на звезду под номером id
-    clickOnStar(id) {
-        let stars = this.stars;
-        if (stars == id) {
-            stars -= 1;
-            if (stars == 0) {
-                stars = 1;
-            }
-        } else {
-            stars = id;
-        }
-        let old = this.stars;
-        if (old != stars) {
-            this.stars = stars;
-        }
-    }
-
     // сортировка
     static compare(a, b) {
         if (a.stars > b.stars) {
@@ -292,55 +221,70 @@ class TaskData {
         if (a.time < b.time) {
             return 1;
         }
-
         return 0;
     }
 }
 // упрощение обработки и хранения данных новой заметки
-const input = new TaskData(new Date(), "", 1, 'black', false, false, false, false);
+const taskInInputField = new TaskData(new Date(), "", 1, 'black', false, false, false, false);
 // текущая вкладка
 var selected = -1;
-// все вкладки
-const tabs = [];
 
-// ! Создание первой вкладки
-var checkLocalStorage = localStorage.length;
-console.log(checkLocalStorage);
 //сетап
-$(document).ready(function() {
+$(document).ready(function () {
     load();
-    // ! Создание первой вкладки
-    if (checkLocalStorage == 0) {
-        createTab();
-    }
+    selectTab(0);
     clickOnStar(3);
-    $(".round").map(function() {
+    $(".round").map(function () {
         this.style.background = this.getAttribute('color');
         return this;
     });
     updateTextArea();
 
-    // каждой появляющейся кнопке при наведении на значок настроек задаём функцию показать 
-    // выпадающее меню. 0ой кнопке - 0ое меню, 1ой кнопке - 1ое меню в html коде
-    // снизу: получить все .ico-bloc находящиеся в .popup то есть выпадающие .ico-block
-    //  при наведении на значок настроек
+    // каждой появляющейся кнопке (иконки доп настроек) 
+    // при наведении на значок доп настроек задаём функцию показать 
+    // выпадающее меню настроек. 0ой кнопке - 0ое меню, 1ой кнопке - 1ое меню в html коде
+    //  при наведении на значок настроек. .secondary-popup - выпадающее меню
+    // .secondary-popup-hover-area - зона наведения если мышка на ней то отображаем .secondary-popup
+    // эта зона наведения захватывает сам блок выпадающих настроек и пр-во между ним и 
+    // значком доп настроек
+    // снизу: получить все .ico-bloc (иконки доп настроек) находящиеся в .popup то есть выпадающие .ico-block
     var btns = document.querySelectorAll(".popup .ico-block");
-    console.log(btns);
     for (let index = 0; index < btns.length; index++) {
+        // получаем иконку доп настроек
         var btn = btns[index];
-        // не понимаю зачем строка снизу но без неё не работает
-        var secondaryPopup = document.querySelectorAll(".secondary-popup")[index];
-        secondaryPopup.style.display = 'none';
+
+        // получаем соответствующую кнопке зону. если курсор в этой зоне (захватывает выпадающее меню 
+        // и пустое пр-во слева), оставляем выпадающее меню
+        // эта зона всегда с display block. Но не всегда в ней display block с
+        // выпадающим меню
+        var secondaryPopupHoverArea = document.querySelectorAll(".secondary-popup-hover-area")[index];
+
+        // при наведении на соответствующую кнопку отобразить соответствующее выпадающее меню
+        // (выпадающее меню находится в блоке .secondary-popup-hover-area)
         btn.onmouseover = () => {
             var secondaryPopup = document.querySelectorAll(".secondary-popup")[index];
             secondaryPopup.style.display = 'block';
         }
+
+        // если мы перенесли курсор с иконки доп настроек (btn) на выпадающее меню
+        // (а точнее secondaryPopupHoverArea - зону с меню и пространством слева) то
+        // продолжаем отображать (ставим display block) для соответствующего выпадающего меню
+        // secondaryPopupHoverArea не конфиктуют как я понял потому что сжимаются когда в них не
+        // отображается выпадающее меню
+        secondaryPopupHoverArea.onmouseover = () => {
+            var secondaryPopup = document.querySelectorAll(".secondary-popup")[index];
+            secondaryPopup.style.display = 'block';
+        }
+
+
+        // если отводим курсор с иконки (не работает когда курсор в secondaryPopupHoverArea) тк
+        // есть функция выше, то перестать отображать выпадающее меню
         btn.onmouseout = () => {
             var secondaryPopup = document.querySelectorAll(".secondary-popup")[index];
             secondaryPopup.style.display = 'none';
         }
-        console.log(btn.onmouseover);
     }
+    setDinamicalInputExpand();
 });
 
 var settingsArea = document.getElementsByClassName("settings-buttons-container")[0];
@@ -351,37 +295,16 @@ var inputPanel = document.getElementsByClassName("input-panel")[0];
 settingsArea.onmouseover = () => {
     // включаем отображение
     popupMenu.style.display = 'block';
-    inputPanel.setAttribute("style", "height:111px");
+    // inputPanel.setAttribute("style", "height:97px");
 }
 
 settingsArea.onmouseout = () => {
     popupMenu.style.display = 'none';
-    inputPanel.setAttribute("style", "height:111px");
+    // inputPanel.setAttribute("style", "height:97px ");
 }
 
-
-//показать по клику
-// function PopUp(id) {
-// 	if ($('#' + id).is(":visible")) {
-// 		PopUpHide(id);
-// 	} else {
-// 		PopUpShow(id);
-// 	}
-// }
-
-// //Функция отображения PopUp
-// function PopUpShow(id){
-// 	$('#' + id).show();
-// }
-// //Функция скрытия PopUp
-// function PopUpHide(id) {
-// 	$("#" + id).hide();
-// }
 //удалить заметку
 function removeTask(tabId, uuid) {
-    array = [];
-    change = false;
-
     tabs.forEach((tab) => {
         if (tab.uuid == tabId) {
             tab.removeTask(uuid);
@@ -405,11 +328,11 @@ function selectTab(tabId) {
     selected = -1;
     tabs.forEach(tab => {
         if (tab.uuid == tabId) {
-            tab.fill(true);
-            tab.create();
+            tab.createTab(true);
+            tab.displayTasks();
             selected = tabId;
         } else {
-            tab.fill(false);
+            tab.createTab(false);
         }
     });
     if (tabs.length < 10) {
@@ -422,63 +345,54 @@ function selectTab(tabId) {
     }
 }
 
-//создать новую
+
+//создать новую вкладку
 function createTab() {
     $("#tabs").html("");
     $("#elements").html("");
     let i = 0;
     tabs.forEach(el => {
-        if (el.text > i) {
-            i = el.text;
-        }
+        var tabName = el.name;
+        var regex = /Вкладка (\d+)/
+        console.log(tabName)
+        if (regex.exec(tabName) != undefined)
+            console.log(regex.exec(tabName))
     });
-    new TabData((i + 1), []).create();
+    new TabData(('Вкладка ' + (i + 1).toString()), []).displayTasks();
     selectTab(tabs.length - 1);
     save();
 }
-//удалить
+
+
+//удалить вкладку
 function deleteTab(uuid) {
-    array = [];
-    change = false;
+    tabs.splice(uuid,1);
+    for (let i = 0; i < tabs.length; i++) {
+        var tab = tabs[i];
+        tab.uuid = i;
+    }
 
-    tabs.forEach((element) => {
-        if (change || element.uuid != uuid) {
-            if (change) {
-                element.uuid -= 1;
-            }
-            array.push(element);
-        } else {
-            change = true;
-        }
-    });
-
-    if (change) {
-        while (tabs.length > 0) {
-            tabs.pop();
-        }
-
-        array.forEach((element) => {
-            tabs.push(element);
-        });
-        save();
-        if (selected == uuid) {
-            selectTab(0);
-        } else {
-            selectTab(selected);
-        }
+    save();
+    // если удалили вкладку которая выбрана то выбираем предыдующую
+    // если удалили вкладку у которой порядковый номер был меньше чем у выбранной
+    if (selected >= uuid) {
+        // то новый её ид уменьшится на 1
+        selectTab(--selected);
+    } else {
+        selectTab(selected);
     }
 }
 
 /** создание заметки */
 //звезда новой заметки
 function clickOnStar(id) {
-    input.clickOnStar(id);
+    taskInInputField.stars = id;
     let inp = $('#star_input_div');
     inp.html('');
     let text = '';
     for (let index = 1; index <= 5; index++) {
         text += '<img class="input_star_img" is="star_' + index + '" alt="" onclick="clickOnStar(' + index + ')" src="assets/';
-        if (index <= input.stars) {
+        if (index <= taskInInputField.stars) {
             text += 'paintedInputStar';
         } else {
             text += 'inputStar';
@@ -496,66 +410,65 @@ function createElement1() {
     let inp = $('#input_to_do');
     let text = inp.val();
     if (text.length > 0) {
-        tabs[selected].elements.push(new TaskData(new Date(), text, input.stars, input.color, input.bold, input.strike, input.underline, input.italic));
-        tabs[selected].create();
+        tabs[selected].elements.push(new TaskData(new Date(), text, taskInInputField.stars,
+            taskInInputField.color, taskInInputField.bold,
+            taskInInputField.strike, taskInInputField.underline, taskInInputField.italic));
+        tabs[selected].displayTasks();
         save();
     }
     inp.val('');
+    setCorrectTaskInputHeights();
 }
 //изменить цвет
 function changeColor(btn) {
-    input.color = btn.getAttribute('color');
+    taskInInputField.color = btn.getAttribute('color');
     updateTextArea();
 }
 //изменить форматирование
 function changeFont(i) {
     switch (i) {
-        case 0:
-            {
-                input.bold = !input.bold;
-                break;
-            }
-        case 1:
-            {
-                input.strike = !input.strike;
-                break;
-            }
-        case 2:
-            {
-                input.underline = !input.underline;
-                break;
-            }
-        case 3:
-            {
-                input.italic = !input.italic;
-                break;
-            }
+        case 0: {
+            taskInInputField.bold = !taskInInputField.bold;
+            break;
+        }
+        case 1: {
+            taskInInputField.strike = !taskInInputField.strike;
+            break;
+        }
+        case 2: {
+            taskInInputField.underline = !taskInInputField.underline;
+            break;
+        }
+        case 3: {
+            taskInInputField.italic = !taskInInputField.italic;
+            break;
+        }
     }
     updateTextArea();
 }
 //форматирование поле ввода
 function updateTextArea() {
     let inp = $('#input_to_do');
-    inp.css('color', input.color);
-    if (input.bold) {
+    inp.css('color', taskInInputField.color);
+    if (taskInInputField.bold) {
         inp.css('font-weight', 'bold');
     } else {
         inp.css('font-weight', '');
     }
 
     let decoration = '';
-    if (input.strike && input.underline) {
+    if (taskInInputField.strike && taskInInputField.underline) {
         decoration = 'line-through underline';
     }
-    if (!input.strike && input.underline) {
+    if (!taskInInputField.strike && taskInInputField.underline) {
         decoration = 'underline';
     }
-    if (input.strike && !input.underline) {
+    if (taskInInputField.strike && !taskInInputField.underline) {
         decoration = 'line-through';
     }
     inp.css('text-decoration', decoration);
 
-    if (input.italic) {
+    if (taskInInputField.italic) {
         inp.css('font-style', 'italic');
     } else {
         inp.css('font-style', '');
@@ -603,14 +516,20 @@ function date(year, month, day) {
 }
 
 // динамическое расширение textarea
-// в user_input и inputPanel ещё нужно поставить : align-items: end
-var textarea = document.getElementById("input_to_do");
-var limit = 200;
+function setDinamicalInputExpand() {
+    // в user_input и inputPanel ещё нужно поставить : align-items: end
+    var textarea = document.getElementById("input_to_do");
+    textarea.oninput = setCorrectTaskInputHeights;
+}
 
-textarea.oninput = function() {
+function setCorrectTaskInputHeights() {
+    var limit = 200;
+    var textarea = document.getElementById("input_to_do");
     textarea.style.height = "62px";
     textarea.style.height = Math.min(textarea.scrollHeight, limit) + "px";
-
+    
     var inputPanel = document.getElementsByClassName("input-panel")[0];
-    inputPanel.style.height = (Math.min(textarea.scrollHeight, limit) + 57) + "px";
-};
+    var newHeight = Math.min(textarea.scrollHeight-14, limit) + 57;
+    inputPanel.style.height = newHeight + "px";
+
+}
