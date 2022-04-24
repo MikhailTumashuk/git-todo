@@ -4,7 +4,7 @@ const tabs = [];
 // TODO: Пофиксить баг: если быстро перейти на одну вкладку и обратно система думает что был дабл клик
 // по вкладке
 // наложение вкладок
-// правильная нумерация при создании вкладки
+// перенести функцию display task в TabData
 
 // вкладка
 class TabData {
@@ -13,7 +13,7 @@ class TabData {
         //название вкладки
         this.name = name;
         //заметки
-        this.elements = elements;
+        this.tasks = elements;
         //автодобавление в массив
         tabs.push(this);
         //добавление html кнопку со вкладкой
@@ -25,26 +25,27 @@ class TabData {
         // строка ниже не бесполезна
         $("#elements").html("");
         let i = 0;
-        // строка ниже не бесполезна
+        // строка ниже не бесполезна. сортирует this.tasks и даёт им uuid
         this.sort();
 
-        this.elements.forEach(value => {
-            value.uuid = i;
-            value.displayTasks(this.uuid);
+        this.tasks.forEach(task => {
+            task.uuid = i;
+            task.displayTask(tabs.findIndex( (tab) => tab == this));
             i++;
         });
     }
 
     // удаление заметки
     removeTask(uuid) {
-        this.elements.splice(uuid, 1);
+        // удалить одну заметку по индексу uuid
+        this.tasks.splice(uuid, 1);
         this.displayTasks();
         save();
     }
 
     // изменение звезд на заметке
     clickOnStar(uuid, id) {
-        this.elements[uuid].stars = id;
+        this.tasks[uuid].stars = id;
         this.displayTasks();
         save();
     }
@@ -92,9 +93,9 @@ class TabData {
     }
 
     sort() {
-        this.elements.sort(TaskData.compare);
+        this.tasks.sort(TaskData.compare);
         let i = 0;
-        this.elements.forEach(el => {
+        this.tasks.forEach(el => {
             el.uuid = i;
             i++;
         });
@@ -127,8 +128,8 @@ class TaskData {
         this.italic = italic;
     }
 
-    //создать заметку
-    displayTasks(tab) {
+    //создать заметку для определённой вкладки
+    displayTask(tab) {
         
         //month
         var day = this.day;
@@ -176,14 +177,14 @@ class TaskData {
         $("#elements").append(context);
     }
 
-    // метод разукрашивающий звезды
+    // создание html елементов - картинок звёздочек
     fillStarts(tabId) {
         let context = "";
         for (var i = 0; i < 5; i++) {
             let arg =
                 `<img class="starImg" alt="" 
                     onclick="clickOnStarElement(${tabId}, ${this.uuid}, ${i+1})" 
-                    ${ i< this.stars? ' src="assets/paintedStar.svg"' : 
+                    ${ i < this.stars? ' src="assets/paintedStar.svg"' : 
                     ' src="assets/star.svg"'}
                 >`;
             context += arg;
@@ -270,6 +271,9 @@ $(document).ready(function () {
         }
     }
     setDinamicalInputExpand();
+    // Воу, если я просто обращаюсь к enter_btn хотя такой переменной не существует
+    // JS находит на странице элемент с id enter_btn
+    enter_btn.onclick = createTaskFromInput;
 });
 
 var settingsArea = document.getElementsByClassName("settings-buttons-container")[0];
@@ -280,30 +284,20 @@ var inputPanel = document.getElementsByClassName("input-panel")[0];
 settingsArea.onmouseover = () => {
     // включаем отображение
     popupMenu.style.display = 'block';
-    // inputPanel.setAttribute("style", "height:97px");
 }
 
 settingsArea.onmouseout = () => {
     popupMenu.style.display = 'none';
-    // inputPanel.setAttribute("style", "height:97px ");
 }
 
-//удалить заметку
+// функция добавляется в html через js
 function removeTask(tabId, uuid) {
-    tabs.forEach((tab) => {
-        if (tab.uuid == tabId) {
-            tab.removeTask(uuid);
-        }
-    });
+    tabs[tabId].removeTask(uuid)
 }
 
 //клик по звезде (id) на странице (tabId) в заметке (uuid)
 function clickOnStarElement(tabId, uuid, id) {
-    tabs.forEach(tab => {
-        if (tab.uuid == tabId) {
-            tab.clickOnStar(uuid, id);
-        }
-    });
+    tabs[tabId].clickOnStar(uuid, id)
 }
 
 // выбрать вкладку
@@ -336,7 +330,10 @@ function createTab() {
     $("#tabs").html("");
     $("#elements").html("");
     let i = 0;
-    var lastTabName = tabs[tabs.length-1].name;
+    // Берём название стоящей слева вкладки а если эта вкладка первая
+    // то возьмём Вкладка 0 тогда по алгоритму ниже первая вкладка будет
+    // иметь название Вкладка 1
+    var lastTabName = tabs.length > 0 ? tabs[tabs.length-1].name : 'Вкладка 0';
 
     // Ищем вкладку с цифрой, отдельной группой выделяем само число после слова Вкладка
     var regex = /Вкладка (\d+)/
@@ -388,15 +385,16 @@ function clickOnStar(id) {
     inp.append(text);
 }
 
+
 //создать заметку
-function createElement1() {
+function createTaskFromInput() {
     if (tabs.length == 0) {
         createTab();
     }
     let inp = $('#input_to_do');
     let text = inp.val();
     if (text.length > 0) {
-        tabs[selected].elements.push(new TaskData(new Date(), text, taskInInputField.stars,
+        tabs[selected].tasks.push(new TaskData(new Date(), text, taskInInputField.stars,
             taskInInputField.color, taskInInputField.bold,
             taskInInputField.strike, taskInInputField.underline, taskInInputField.italic));
         tabs[selected].displayTasks();
@@ -405,11 +403,15 @@ function createElement1() {
     inp.val('');
     setCorrectTaskInputHeights();
 }
+
+
 //изменить цвет
 function changeColor(btn) {
     taskInInputField.color = btn.getAttribute('color');
     updateTextArea();
 }
+
+
 //изменить форматирование
 function changeFont(i) {
     switch (i) {
@@ -432,6 +434,8 @@ function changeFont(i) {
     }
     updateTextArea();
 }
+
+
 //форматирование поле ввода
 function updateTextArea() {
     let inp = $('#input_to_do');
@@ -463,32 +467,29 @@ function updateTextArea() {
 
 //загрузка
 function load() {
-    while (elements.length > 0) {
-        elements.pop();
-    }
-    items = JSON.parse(window.localStorage.getItem("tasksData"));
+    var tabs = JSON.parse(window.localStorage.getItem("tasksData"));
 
-    if (items == null) {
+    if (tabs == null) {
         return;
     }
-    items.forEach((element) => {
+    tabs.forEach((tab) => {
         let tabElements = [];
-        element.elements.forEach((element) => {
-            let d = date(element.year, element.month, element.day);
+        tab.tasks.forEach((task) => {
+            let d = date(task.year, task.month, task.day);
             let v = new TaskData(
                 d,
-                element.value,
-                element.stars,
-                element.color,
-                element.bold,
-                element.strike,
-                element.underline,
-                element.italic
+                task.value,
+                task.stars,
+                task.color,
+                task.bold,
+                task.strike,
+                task.underline,
+                task.italic
             );
-            v.time = element.time;
+            v.time = task.time;
             tabElements.push(v);
         })
-        new TabData(element.name, tabElements);
+        new TabData(tab.name, tabElements);
     });
     selectTab(0);
 }
