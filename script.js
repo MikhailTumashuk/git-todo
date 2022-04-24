@@ -4,7 +4,49 @@ const tabs = [];
 // TODO: Пофиксить баг: если быстро перейти на одну вкладку и обратно система думает что был дабл клик
 // по вкладке
 // наложение вкладок
-// перенести функцию display task в TabData
+// выделение слов как в вроде
+
+// https://www.sohamkamani.com/javascript/enums/
+// Enum. Статические члены класса не передаются его экземплярам. т.е. у TextDecoration.Bold 
+// нельзя вызвать TextDecoration.Bold.Bold, зато у них есть свойство-строка type.
+// Хотя эта строка не имеет значения
+// Пример использования
+// var tD =  TextDecoration.Bold
+// switch (tD) {
+//     case TextDecoration.Strike:
+//         console.log("stike hard")
+//         break;
+//     case TextDecoration.Bold:
+//         console.log("bold boy")
+//         break;
+// }
+
+
+class TextDecorationType {
+    // если справа ставить цифры то думаю это не сработает а пусть будет работать:
+    // We can verify whether a particular variable is a Season enum
+    // console.log(season instanceof Season)
+    static Bold = new TextDecorationType("bold")
+    static Strike = new TextDecorationType("strike")
+    static Underline = new TextDecorationType("underline")
+    static Italic = new TextDecorationType("italic")
+
+    constructor(type) {
+        this.type = type
+    }
+}
+
+class TextDecorationData {
+    constructor(textDecorationType, startPosition, endPosition) {
+        this.textDecorationType = textDecorationType
+        this.startPosition = startPosition
+        this.endPosition = endPosition
+    }
+
+    static format(text) {
+        // switch...
+    }
+}
 
 // вкладка
 class TabData {
@@ -30,7 +72,8 @@ class TabData {
 
         this.tasks.forEach(task => {
             task.uuid = i;
-            task.displayTask(tabs.findIndex( (tab) => tab == this));
+            this.displayTask(task)
+            // task.displayTask(tabs.findIndex( (tab) => tab == this));
             i++;
         });
     }
@@ -89,8 +132,55 @@ class TabData {
                     break;
             }
         });
-
     }
+
+    //создать заметку для определённой вкладки
+    displayTask(task) {
+        var day = task.day;
+        if (day < 10) {
+            day = "0" + day;
+        }
+
+        var month = task.month + 1;
+        if (month < 10) {
+            month = "0" + month;
+        }
+
+        let format = task.value;
+        format = format.replaceAll("\n", "<br>");
+        if (task.bold) {
+            format = '<b>' + format + '</b>';
+        }
+        if (task.strike) {
+            format = '<strike>' + format + '</strike>';
+        }
+        if (task.underline) {
+            format = '<u>' + format + '</u>';
+        }
+        if (task.italic) {
+            format = '<i>' + format + '</i>';
+        }
+        context += format + "</span>";
+
+        var context =
+            `<div class="listElement" id="listElement_${task.uuid}">
+            <span style="min-width: 9vh;" class="listElDate">${day}.${month}.${(task.year - 2000)}</span>
+            <span class="listElText" id="listElText${task.uuid}" 
+                style="min-width: 54vh; max-width: 54vh; color:${task.color}">
+                ${format}
+            </span>
+            <div class="listElStars">
+                ${task.fillStarts(this.uuid)}
+            </div>
+            <div class="trashImgDiv">
+                <img class="trashImg" src="assets/trash.svg" alt="" 
+                    onclick="removeTask(${this.uuid},${task.uuid})">
+            </div>
+        </div>`;
+
+        $("#elements").append(context);
+    }
+
 
     sort() {
         this.tasks.sort(TaskData.compare);
@@ -128,54 +218,6 @@ class TaskData {
         this.italic = italic;
     }
 
-    //создать заметку для определённой вкладки
-    displayTask(tab) {
-        
-        //month
-        var day = this.day;
-        if (day < 10) {
-            day = "0" + day;
-        }
-        
-        var month = this.month + 1;
-        if (month < 10) {
-            month = "0" + month;
-        }
-        
-        let format = this.value;
-        format = format.replaceAll("\n", "<br>");
-        if (this.bold) {
-            format = '<b>' + format + '</b>';
-        }
-        if (this.strike) {
-            format = '<strike>' + format + '</strike>';
-        }
-        if (this.underline) {
-            format = '<u>' + format + '</u>';
-        }
-        if (this.italic) {
-            format = '<i>' + format + '</i>';
-        }
-        context += format + "</span>";
-
-        var context = 
-        `<div class="listElement" id="listElement_${this.uuid}">
-            <span style="min-width: 9vh;" class="listElDate">${day}.${month}.${(this.year - 2000)}</span>
-            <span class="listElText" id="listElText${this.uuid}" 
-                style="min-width: 54vh; max-width: 54vh; color:${this.color}">
-                ${format}
-            </span>
-            <div class="listElStars">
-                ${this.fillStarts(tab)}
-            </div>
-            <div class="trashImgDiv">
-                <img class="trashImg" src="assets/trash.svg" alt="" 
-                    onclick="removeTask(${tab},${this.uuid})">
-            </div>
-        </div>`;
-
-        $("#elements").append(context);
-    }
 
     // создание html елементов - картинок звёздочек
     fillStarts(tabId) {
@@ -333,7 +375,7 @@ function createTab() {
     // Берём название стоящей слева вкладки а если эта вкладка первая
     // то возьмём Вкладка 0 тогда по алгоритму ниже первая вкладка будет
     // иметь название Вкладка 1
-    var lastTabName = tabs.length > 0 ? tabs[tabs.length-1].name : 'Вкладка 0';
+    var lastTabName = tabs.length > 0 ? tabs[tabs.length - 1].name : 'Вкладка 0';
 
     // Ищем вкладку с цифрой, отдельной группой выделяем само число после слова Вкладка
     var regex = /Вкладка (\d+)/
@@ -349,7 +391,7 @@ function createTab() {
 
 //удалить вкладку
 function deleteTab(uuid) {
-    tabs.splice(uuid,1);
+    tabs.splice(uuid, 1);
     for (let i = 0; i < tabs.length; i++) {
         var tab = tabs[i];
         tab.uuid = i;
@@ -409,6 +451,18 @@ function createTaskFromInput() {
 function changeColor(btn) {
     taskInInputField.color = btn.getAttribute('color');
     updateTextArea();
+}
+
+// пока нигде не используется
+function getSelectionPositions() {
+    var selectionObj = window.getSelection()
+
+    // если выбрано окно ввода и есть выделение
+    if (selectionObj.anchorNode == $('.user_input')[0] &&
+        selectionObj.type == "Range") {
+        console.log(input_to_do.selectionStart)
+        console.log(input_to_do.selectionEnd)
+    }
 }
 
 
@@ -514,9 +568,9 @@ function setCorrectTaskInputHeights() {
     var textarea = document.getElementById("input_to_do");
     textarea.style.height = "62px";
     textarea.style.height = Math.min(textarea.scrollHeight, limit) + "px";
-    
+
     var inputPanel = document.getElementsByClassName("input-panel")[0];
-    var newHeight = Math.min(textarea.scrollHeight-14, limit) + 57;
+    var newHeight = Math.min(textarea.scrollHeight - 14, limit) + 57;
     inputPanel.style.height = newHeight + "px";
 
 }
