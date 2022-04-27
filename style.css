@@ -48,6 +48,7 @@ h1 {
     text-align: center;
     z-index: 1;
     overflow: hidden;
+    white-space: nowrap;
 }
 
 .tabs_selected {
