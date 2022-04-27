@@ -76,6 +76,7 @@ class TabData {
             // task.displayTask(tabs.findIndex( (tab) => tab == this));
             i++;
         });
+        console.log('displaing tasks')
     }
 
     // удаление заметки
@@ -110,14 +111,21 @@ class TabData {
             switch (event.which) {
                 // если click
                 case 1:
-                    selectTab(uuid);
+                    // если выбрали другую вкладку то удаляем инфомацию о времени кликов
+                    // на другие вкладки
+                    // if (uuid != selected)
+                    //     sessionStorage.clear()
                     // обрабатываем дабл клик
                     var now = new Date().getTime();
                     var lastClicked = sessionStorage.getItem(uuid);
+                    // console.log(sessionStorage)
                     if (lastClicked && (now - lastClicked < 450)) {
                         event.preventDefault(); // отменить стандартное действие
-                        alert('uraa')
+                        renameTab(this)
+                        // $(this).replaceWith($('<input type="text" size="5">' + this.innerText));
+                        
                     } else {
+                        selectTab(uuid);
                         // создаём запись в сессионное хранилище о времени клика на определённую
                         // вкладку
                         sessionStorage.setItem(uuid, now.toString())
@@ -192,6 +200,27 @@ class TabData {
     }
 }
 
+
+function renameTab(tab) {
+    var input = $('#input_to_do')
+    // добавляем в инпут прежнее название вкладки
+    input.val(tab.innerText)
+    // ставим курсор в конец инпута
+    input.focus()
+    // когда нажимаем энтер или кликаем в любей место кроме инпута
+    input[0].onblur = function () {
+        let uuid = tab.getAttribute('uuid');
+        // устанавливаем новое название экземпляру класса
+        tabs[uuid].name = input.val()
+        // сохранить новое название в local storage
+        save()
+        // костыль для того чтобы можно было увидеть только что сохранённое название вкладки
+        selectTab(selected)
+        input.val('')
+        // удаляем обработчик потери фокуса после инпута
+        input[0].onblur = () => {}
+    }
+}
 
 //заметка
 class TaskData {
