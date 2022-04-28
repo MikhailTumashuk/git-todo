@@ -1,4 +1,4 @@
-// все вкладки TabData
+// все вкладки Tab
 const tabs = [];
 
 // TODO: Пофиксить баг: если быстро перейти на одну вкладку и обратно система думает что был дабл клик
@@ -21,6 +21,9 @@ const tabs = [];
 //         break;
 // }
 
+var maxTabNameLength = 20;
+var tabsMaxCount = 10;
+var maxTaskLength = 1000;
 
 class TextDecorationType {
     // если справа ставить цифры то думаю это не сработает а пусть будет работать:
@@ -49,7 +52,7 @@ class TextDecorationData {
 }
 
 // вкладка
-class TabData {
+class Tab {
     constructor(name, elements) {
         this.uuid = tabs.length;
         //название вкладки
@@ -121,7 +124,10 @@ class TabData {
                     // console.log(sessionStorage)
                     if (lastClicked && (now - lastClicked < 450)) {
                         event.preventDefault(); // отменить стандартное действие
-                        renameTab(this)
+                        // вызываем статический метод класса Tab
+                        // если убрать static и вызывать через this то 
+                        // почему то выдаётся this.renameTab() is not a function
+                        Tab.renameTab(this)
                         // $(this).replaceWith($('<input type="text" size="5">' + this.innerText));
                         
                     } else {
@@ -198,29 +204,34 @@ class TabData {
             i++;
         });
     }
-}
 
 
-function renameTab(tab) {
-    var input = $('#input_to_do')
-    // добавляем в инпут прежнее название вкладки
-    input.val(tab.innerText)
-    // ставим курсор в конец инпута
-    input.focus()
-    // когда нажимаем энтер или кликаем в любей место кроме инпута
-    input[0].onblur = function () {
-        let uuid = tab.getAttribute('uuid');
-        // устанавливаем новое название экземпляру класса
-        tabs[uuid].name = input.val()
-        // сохранить новое название в local storage
-        save()
-        // костыль для того чтобы можно было увидеть только что сохранённое название вкладки
-        selectTab(selected)
-        input.val('')
-        // удаляем обработчик потери фокуса после инпута
-        input[0].onblur = () => {}
+    static renameTab(tab) {
+        var input = $('#input_to_do')
+        // этот аттрибут не даст ввести больше n символов в инпут
+        input[0].setAttribute('maxlength', maxTabNameLength)
+        // добавляем в инпут прежнее название вкладки
+        input.val(tab.innerText)
+        // ставим курсор в конец инпута
+        input.focus()
+        // когда нажимаем энтер или кликаем в любей место кроме инпута
+        input[0].onblur = function () {
+            let uuid = tab.getAttribute('uuid');
+            // устанавливаем новое название экземпляру класса
+            tabs[uuid].name = input.val()
+            // сохранить новое название в local storage
+            save()
+            // костыль для того чтобы можно было увидеть только что сохранённое название вкладки
+            selectTab(selected)
+            input.val('')
+            input[0].setAttribute('maxlength', maxTaskLength)
+            // удаляем обработчик потери фокуса после инпута
+            input[0].onblur = () => {}
+        }
     }
 }
+
+
 
 //заметка
 class TaskData {
@@ -293,9 +304,12 @@ $(document).ready(function () {
     clickOnStar(3);
     $(".round").map(function () {
         this.style.background = this.getAttribute('color');
-        return this;
+        // вроде то что снизу бесполезно
+        // return this;
     });
     updateTextArea();
+    // ограничим ввод задачи. Максимальное кол-во символов.
+    $('#input_to_do')[0].setAttribute('maxlength', maxTaskLength)
 
     // каждой появляющейся кнопке (иконки доп настроек) 
     // при наведении на значок доп настроек задаём функцию показать 
@@ -385,7 +399,7 @@ function selectTab(tabId) {
             tab.createTab(false);
         }
     });
-    if (tabs.length < 10) {
+    if (tabs.length < tabsMaxCount) {
         var context = '<button id="new_tab" class="tabs_item" onclick="createTab()"';
         if (tabs.length > 0) {
             context += 'style="margin-left: -10px;"';
@@ -412,7 +426,7 @@ function createTab() {
         //  i - число после слова Вкладка
         i = parseInt(regex.exec(lastTabName)[1])
     }
-    new TabData(('Вкладка ' + (++i)), []).displayTasks();
+    new Tab(('Вкладка ' + (++i)), []).displayTasks();
     selectTab(tabs.length - 1);
     save();
 }
@@ -572,7 +586,7 @@ function load() {
             v.time = task.time;
             tabElements.push(v);
         })
-        new TabData(tab.name, tabElements);
+        new Tab(tab.name, tabElements);
     });
     selectTab(0);
 }
