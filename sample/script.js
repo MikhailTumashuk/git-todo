@@ -28,88 +28,6 @@ var tabsMaxCount = 10;
 var maxTaskLength = 1000;
 
 
-class TextDecorationType {
-    // если справа ставить цифры то думаю это не сработает а пусть будет работать:
-    // We can verify whether a particular variable is a Season enum
-    // console.log(season instanceof Season)
-
-    // upd пусть справа будет значение обрамляющего тега
-    static Bold = new TextDecorationType("b")
-    static Strike = new TextDecorationType("strike")
-    static Underline = new TextDecorationType("u")
-    static Italic = new TextDecorationType("i")
-
-    constructor(tag) {
-        this.tag = tag
-    }
-}
-
-
-// вставить текст так чтобы он начинался в строке на индексе index
-String.prototype.insertAt = function (index, pasteText) {
-    return this.substring(0, index) + pasteText + this.substring(index);
-}
-
-// получаем на вход строку с тэгами но дана позиция index 
-// без учёта тегов(если в строке убрать все теги), переводим её в позицию с учётом тегов
-function getIndexCountingTags(noTagIndex, textWithTags) {
-    var tagRegex = /<[^>]+>/
-    var str = textWithTags
-    // разница между позицией символа игнорируя и не игнорируя теги, те длина всех тегов в сумме
-    // до нужной позиции
-    var tagSymbolsCount = 0
-    // счёт символов исключаяя теги
-    var noTagSymbolsCount = 0
-    // console.log('searching place: ' + noTagIndex)
-    var result = tagRegex.exec(str)
-    // если нет тегов, возвращаем начальное значение
-    if (result == undefined && noTagIndex < textWithTags.length) {
-        console.log('no tags found ' + noTagIndex)
-        return noTagIndex;
-    }
-    while (result != undefined) {
-        // получаем число текстовых символов (длину текста) до найдённого тега
-        // на 1ой итерации - до 1ого тега, на 2ой - до 2ого
-        noTagSymbolsCount = result.index
-        // если длинна текста (кол-во текстовых символов) в нашей строке больше искомого индекса
-        // то перестаём считать длину тегов тк обработали все теги до искомой позиции 
-        if (noTagSymbolsCount > noTagIndex) {
-            return (noTagIndex + tagSymbolsCount)
-        }
-        // увеличиваем общую длинну тегов до обработанной позиции
-        tagSymbolsCount += result[0].length
-        // удаляем очередной тег из строки
-        str = str.replace(tagRegex, "")
-        // получаем следующий тег в строке
-        result = tagRegex.exec(str)
-    }
-    // если индекс указан слишком большой (несуществующий) или строка не заканчивается тегом
-    return noTagIndex + tagSymbolsCount;
-}
-
-
-class TextDecorationData {
-    constructor(textDecorationType, startPosition, endPosition) {
-        this.textDecorationType = textDecorationType
-        this.startPosition = startPosition
-        this.endPosition = endPosition
-    }
-
-    format(text) {
-        var openingTag = '<' + this.textDecorationType.tag + '>';
-        var closingTag = openingTag.replace("<", "</");
-
-        var startIndexIncludingTags = getIndexCountingTags(this.startPosition, text)
-        var resultTxt = text.insertAt(startIndexIncludingTags, openingTag)
-
-        var endIndexIncludingTags = getIndexCountingTags(this.endPosition, resultTxt)
-        resultTxt = resultTxt.insertAt(endIndexIncludingTags, closingTag)
-        // когда будем в HTML добавлять текст он автоматически преобразуется
-        return resultTxt
-    }
-}
-
-
 // вкладка
 class Tab {
     constructor(name, elements) {
@@ -224,10 +142,6 @@ class Tab {
         // появляется \n
         format = format.replaceAll("\n", "<br>");
 
-        task.textDecorations.forEach(textDecoration => {
-            format = textDecoration.format(format)
-        });
-
         var context =
             `<div class="listElement" id="listElement_${task.uuid}">
             <span style="min-width: 9vh;" class="listElDate">${day}.${month}.${(task.year - 2000)}</span>
@@ -302,7 +216,6 @@ class TaskData {
         this.stars = stars;
         //форматирование
         this.color = color;
-        this.textDecorations = textDecorations;
     }
 
 
@@ -340,10 +253,7 @@ class TaskData {
     }
 }
 // упрощение обработки и хранения данных новой заметки
-const taskInInputField = new TaskData(new Date(), "", 1, 'black',
-    [new TextDecorationData(TextDecorationType.Bold, 0, 10),
-        // new TextDecorationData(TextDecorationType.Strike, 0, 5)
-    ]);
+const taskInInputField = new TaskData(new Date(), "", 1, 'black',)
 // текущая вкладка
 var selected = -1;
 
@@ -409,6 +319,7 @@ $(document).ready(function () {
     // Воу, если я просто обращаюсь к enter_btn хотя такой переменной не существует
     // JS находит на странице элемент с id enter_btn
     enter_btn.onclick = createTaskFromInput;
+    setColorActions();
 });
 
 var settingsArea = document.getElementsByClassName("settings-buttons-container")[0];
@@ -433,6 +344,22 @@ function removeTask(tabId, uuid) {
 //клик по звезде (id) на странице (tabId) в заметке (uuid)
 function clickOnStarElement(tabId, uuid, id) {
     tabs[tabId].clickOnStar(uuid, id)
+}
+
+function setColorActions() {
+    var colorButtons = document.getElementsByClassName("round")
+    var colors = []
+    for (let i = 0; i < colorButtons.length; i++) {
+        var colorButton = colorButtons[i];
+        var buttonColor = colorButton.getAttribute('color').toString()
+        colors.push(buttonColor)
+        colorButton.onclick = () => {
+            // тут нельзя просто так поставить переменную buttonColor
+            // тк она скорее всего хотя в ней и строка явл-ся пер-ой ссылочного типа
+            // и всем кнопкам даётся одна и та же ссылка на одно значение, по итогу - чёрный
+            editor.execute('fontColor', {value: `${colors[i]}`})
+        }
+    }
 }
 
 // выбрать вкладку
@@ -539,43 +466,23 @@ function createTaskFromInput() {
 }
 
 
-//изменить цвет
-function changeColor(btn) {
-    taskInInputField.color = btn.getAttribute('color');
-    updateTextArea();
-}
-
-// пока нигде не используется
-function getUserInputSelectionPositions() {
-    var selectionObj = window.getSelection()
-
-    // если выбрано окно ввода и есть выделение
-    if (selectionObj.anchorNode == $('.user_input')[0] &&
-        selectionObj.type == "Range") {
-        console.log(input_to_do.selectionStart)
-        console.log(input_to_do.selectionEnd)
-    }
-    return [input_to_do.selectionStart, input_to_do.selectionEnd]
-}
-
-
 //изменить форматирование
 function changeFont(i) {
     switch (i) {
         case 0: {
-            taskInInputField.bold = !taskInInputField.bold;
+            editor.commands.get("bold").execute()
             break;
         }
         case 1: {
-            taskInInputField.strike = !taskInInputField.strike;
+            editor.commands.get("strikethrough").execute()
             break;
         }
         case 2: {
-            taskInInputField.underline = !taskInInputField.underline;
+            editor.commands.get("underline").execute()
             break;
         }
         case 3: {
-            taskInInputField.italic = !taskInInputField.italic;
+            editor.commands.get("italic").execute()
             break;
         }
     }
@@ -627,16 +534,11 @@ function load() {
             // две строки ниже нужны чтобы задать явно тип TextDecorationData
             // вместа типа объект
             let textDecorations = [];
-            task.textDecorations.forEach(textDecoration => {
-                textDecorations.push(new TextDecorationData(textDecoration.textDecorationType,
-                    textDecoration.startPosition, textDecoration.endPosition))
-            });
             let v = new TaskData(
                 d,
                 task.text,
                 task.stars,
                 task.color,
-                textDecorations
             );
             v.time = task.time;
             tabElements.push(v);
@@ -665,7 +567,17 @@ function date(year, month, day) {
 function setDinamicalInputExpand() {
     // в user_input и inputPanel ещё нужно поставить : align-items: end
     var textarea = document.getElementById("input_to_do");
-    textarea.oninput = setCorrectTaskInputHeights;
+    // textarea.oninput = setCorrectTaskInputHeights;
+    var myElement = document.getElementById("input_to_do");
+    if (window.addEventListener) {
+        // Normal browsers
+        myElement.addEventListener('DOMSubtreeModified', setCorrectTaskInputHeights, false);
+    } else
+    if (window.attachEvent) {
+        // IE
+        myElement.attachEvent('DOMSubtreeModified', setCorrectTaskInputHeights);
+    }
+
 }
 
 
@@ -678,5 +590,7 @@ function setCorrectTaskInputHeights() {
     var inputPanel = document.getElementsByClassName("input-panel")[0];
     var newHeight = Math.min(textarea.scrollHeight - 14, limit) + 57;
     inputPanel.style.height = newHeight + "px";
-
+    if (textarea.innerText.length > 1000) {
+        // textarea.innerText
+    }
 }

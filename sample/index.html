@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<!--
+	Copyright (c) 2014-2022, CKSource Holding sp. z o.o. All rights reserved.
+	This file is licensed under the terms of the MIT License (see LICENSE.md).
+-->
+
+<html lang="ru" dir="ltr">
+
+<head>
+	<title>CKEditor 5 BalloonEditor build</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" type="image/png" href="https://c.cksource.com/a/1/logos/ckeditor5.png">
+	<link rel="stylesheet" type="text/css" href="editorStyles.css">
+	<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body data-editor="BalloonEditor" data-collaboration="false" data-revision-history="false">
+	<main>
+
+		<div class="container">
+			<h1>Заметки</h1>
+			<!-- Навигация по вкладкам -->
+			<nav id="tabs" class="tabs_items tabs"></nav>
+			<!-- Тело вкладок -->
+			<div id="elements" class="tabs_block tabs_body"></div>
+			<!-- Панель с кнопками настроек и инпутом -->
+			<div class="input-panel">
+				<!-- Выдвигаемые таблички -->
+				<div>
+				</div>
+				<div class="settings-buttons-container">
+					<div class="popup">
+						<div class="secondary-popup-hover-area">
+							<div class="secondary-popup border-block">
+								<table>
+									<tr>
+										<td>
+											<div id="bold_btn" onclick="changeFont(0)"></div>
+										</td>
+										<td>
+											<div id="strike_btn" onclick="changeFont(1)"></div>
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<div id="underline_btn" onclick="changeFont(2)"></div>
+										</td>
+										<td>
+											<div id="italic_btn" onclick="changeFont(3)"></div>
+										</td>
+									</tr>
+								</table>
+							</div>
+						</div>
+						<div class="secondary-popup-hover-area">
+							<div class="secondary-popup border-block">
+								<table>
+									<tr>
+										<td>
+											<button class="round" color="#F84B6B"></button>
+										</td>
+										<td>
+											<button class="round" color="#FFB653"></button>
+										</td>
+										<td>
+											<button class="round" color="#FAFF00"></button>
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<button class="round" color="#11D786"></button>
+										</td>
+										<td>
+											<button class="round" color="#18B9F8"></button>
+										</td>
+										<td>
+											<button class="round" color="#1228EC"></button>
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<button class="round" color="#7448F1"></button>
+										</td>
+										<td>
+											<button class="round" color="#F92E97"></button>
+										</td>
+										<td>
+											<button class="round" color="#343A3F"></button>
+										</td>
+									</tr>
+								</table>
+							</div>
+						</div>
+						<div class="ico-block">
+							<div class="font_btn"></div>
+						</div>
+						<div class="ico-block">
+							<div class="color_btn"></div>
+						</div>
+					</div>
+					<div class="ico-block">
+						<div class="settings_btn"></div>
+					</div>
+				</div>
+				<!-- Блок с полем ввода и выбором числа звезд -->
+				<div class="user_input">
+					<!-- <textarea type="text" id="input_to_do"
+						placeholder="Введите текст заметки"></textarea> -->
+
+					<div class="editor" id="input_to_do">
+
+					</div>
+
+					<div id="star_input_div" class="input_stars"></div>
+				</div>
+				<!-- Кнопка ввода заметки -->
+				<button id="enter_btn"></button>
+			</div>
+		</div>
+
+	</main>
+	<script src=" ../build/ckeditor.js"> </script> 
+	<script src="./ckeditor.js"></script>
+	<script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script type="text/javascript" src="script.js"></script>
+</body>
+
+</html>
