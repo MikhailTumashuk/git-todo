@@ -1,6 +1,7 @@
 // все вкладки Tab
 const tabs = [];
 
+
 // TODO: Пофиксить баг: если быстро перейти на одну вкладку и обратно система думает что был дабл клик
 // по вкладке
 // наложение вкладок
@@ -21,23 +22,71 @@ const tabs = [];
 //         break;
 // }
 
+
 var maxTabNameLength = 20;
 var tabsMaxCount = 10;
 var maxTaskLength = 1000;
+
 
 class TextDecorationType {
     // если справа ставить цифры то думаю это не сработает а пусть будет работать:
     // We can verify whether a particular variable is a Season enum
     // console.log(season instanceof Season)
-    static Bold = new TextDecorationType("bold")
-    static Strike = new TextDecorationType("strike")
-    static Underline = new TextDecorationType("underline")
-    static Italic = new TextDecorationType("italic")
 
-    constructor(type) {
-        this.type = type
+    // upd пусть справа будет значение обрамляющего тега
+    static Bold = new TextDecorationType("b")
+    static Strike = new TextDecorationType("strike")
+    static Underline = new TextDecorationType("u")
+    static Italic = new TextDecorationType("i")
+
+    constructor(tag) {
+        this.tag = tag
     }
 }
+
+
+// вставить текст так чтобы он начинался в строке на индексе index
+String.prototype.insertAt = function (index, pasteText) {
+    return this.substring(0, index) + pasteText + this.substring(index);
+}
+
+// получаем на вход строку с тэгами но дана позиция index 
+// без учёта тегов(если в строке убрать все теги), переводим её в позицию с учётом тегов
+function getIndexCountingTags(noTagIndex, textWithTags) {
+    var tagRegex = /<[^>]+>/
+    var str = textWithTags
+    // разница между позицией символа игнорируя и не игнорируя теги, те длина всех тегов в сумме
+    // до нужной позиции
+    var tagSymbolsCount = 0
+    // счёт символов исключаяя теги
+    var noTagSymbolsCount = 0
+    // console.log('searching place: ' + noTagIndex)
+    var result = tagRegex.exec(str)
+    // если нет тегов, возвращаем начальное значение
+    if (result == undefined && noTagIndex < textWithTags.length) {
+        console.log('no tags found ' + noTagIndex)
+        return noTagIndex;
+    }
+    while (result != undefined) {
+        // получаем число текстовых символов (длину текста) до найдённого тега
+        // на 1ой итерации - до 1ого тега, на 2ой - до 2ого
+        noTagSymbolsCount = result.index
+        // если длинна текста (кол-во текстовых символов) в нашей строке больше искомого индекса
+        // то перестаём считать длину тегов тк обработали все теги до искомой позиции 
+        if (noTagSymbolsCount > noTagIndex) {
+            return (noTagIndex + tagSymbolsCount)
+        }
+        // увеличиваем общую длинну тегов до обработанной позиции
+        tagSymbolsCount += result[0].length
+        // удаляем очередной тег из строки
+        str = str.replace(tagRegex, "")
+        // получаем следующий тег в строке
+        result = tagRegex.exec(str)
+    }
+    // если индекс указан слишком большой (несуществующий) или строка не заканчивается тегом
+    return noTagIndex + tagSymbolsCount;
+}
+
 
 class TextDecorationData {
     constructor(textDecorationType, startPosition, endPosition) {
@@ -46,10 +95,20 @@ class TextDecorationData {
         this.endPosition = endPosition
     }
 
-    static format(text) {
-        // switch...
+    format(text) {
+        var openingTag = '<' + this.textDecorationType.tag + '>';
+        var closingTag = openingTag.replace("<", "</");
+
+        var startIndexIncludingTags = getIndexCountingTags(this.startPosition, text)
+        var resultTxt = text.insertAt(startIndexIncludingTags, openingTag)
+
+        var endIndexIncludingTags = getIndexCountingTags(this.endPosition, resultTxt)
+        resultTxt = resultTxt.insertAt(endIndexIncludingTags, closingTag)
+        // когда будем в HTML добавлять текст он автоматически преобразуется
+        return resultTxt
     }
 }
+
 
 // вкладка
 class Tab {
@@ -129,7 +188,7 @@ class Tab {
                         // почему то выдаётся this.renameTab() is not a function
                         Tab.renameTab(this)
                         // $(this).replaceWith($('<input type="text" size="5">' + this.innerText));
-                        
+
                     } else {
                         selectTab(uuid);
                         // создаём запись в сессионное хранилище о времени клика на определённую
@@ -148,7 +207,7 @@ class Tab {
         });
     }
 
-    //создать заметку для определённой вкладки
+    //создать заметку для этой вкладки
     displayTask(task) {
         var day = task.day;
         if (day < 10) {
@@ -160,21 +219,14 @@ class Tab {
             month = "0" + month;
         }
 
-        let format = task.value;
+        let format = task.text;
+        // где пользователь сам ставит перенос строки в тексте заметки
+        // появляется \n
         format = format.replaceAll("\n", "<br>");
-        if (task.bold) {
-            format = '<b>' + format + '</b>';
-        }
-        if (task.strike) {
-            format = '<strike>' + format + '</strike>';
-        }
-        if (task.underline) {
-            format = '<u>' + format + '</u>';
-        }
-        if (task.italic) {
-            format = '<i>' + format + '</i>';
-        }
-        context += format + "</span>";
+
+        task.textDecorations.forEach(textDecoration => {
+            format = textDecoration.format(format)
+        });
 
         var context =
             `<div class="listElement" id="listElement_${task.uuid}">
@@ -195,7 +247,6 @@ class Tab {
         $("#elements").append(context);
     }
 
-
     sort() {
         this.tasks.sort(TaskData.compare);
         let i = 0;
@@ -204,7 +255,6 @@ class Tab {
             i++;
         });
     }
-
 
     static renameTab(tab) {
         var input = $('#input_to_do')
@@ -232,10 +282,10 @@ class Tab {
 }
 
 
-
 //заметка
 class TaskData {
-    constructor(date, value, stars, color, bold, strike, underline, italic) {
+    //textDecorations - TextDecorationData[]
+    constructor(date, text, stars, color, textDecorations) {
         //забей
         this.uuid = 0;
         //год
@@ -247,15 +297,12 @@ class TaskData {
         //для соритровки по времени
         this.time = date.getTime();
         //текст
-        this.value = value;
+        this.text = text;
         //звезды
         this.stars = stars;
         //форматирование
         this.color = color;
-        this.bold = bold;
-        this.strike = strike;
-        this.underline = underline;
-        this.italic = italic;
+        this.textDecorations = textDecorations;
     }
 
 
@@ -293,7 +340,10 @@ class TaskData {
     }
 }
 // упрощение обработки и хранения данных новой заметки
-const taskInInputField = new TaskData(new Date(), "", 1, 'black', false, false, false, false);
+const taskInInputField = new TaskData(new Date(), "", 1, 'black',
+    [new TextDecorationData(TextDecorationType.Bold, 0, 10),
+        // new TextDecorationData(TextDecorationType.Strike, 0, 5)
+    ]);
 // текущая вкладка
 var selected = -1;
 
@@ -480,8 +530,7 @@ function createTaskFromInput() {
     let text = inp.val();
     if (text.length > 0) {
         tabs[selected].tasks.push(new TaskData(new Date(), text, taskInInputField.stars,
-            taskInInputField.color, taskInInputField.bold,
-            taskInInputField.strike, taskInInputField.underline, taskInInputField.italic));
+            taskInInputField.color, taskInInputField.textDecorations));
         tabs[selected].displayTasks();
         save();
     }
@@ -497,7 +546,7 @@ function changeColor(btn) {
 }
 
 // пока нигде не используется
-function getSelectionPositions() {
+function getUserInputSelectionPositions() {
     var selectionObj = window.getSelection()
 
     // если выбрано окно ввода и есть выделение
@@ -506,6 +555,7 @@ function getSelectionPositions() {
         console.log(input_to_do.selectionStart)
         console.log(input_to_do.selectionEnd)
     }
+    return [input_to_do.selectionStart, input_to_do.selectionEnd]
 }
 
 
@@ -562,7 +612,8 @@ function updateTextArea() {
     }
 }
 
-//загрузка
+
+//загрузка, явное указание типо загруженных объектов
 function load() {
     var tabs = JSON.parse(window.localStorage.getItem("tasksData"));
 
@@ -573,31 +624,42 @@ function load() {
         let tabElements = [];
         tab.tasks.forEach((task) => {
             let d = date(task.year, task.month, task.day);
+            // две строки ниже нужны чтобы задать явно тип TextDecorationData
+            // вместа типа объект
+            let textDecorations = [];
+            task.textDecorations.forEach(textDecoration => {
+                textDecorations.push(new TextDecorationData(textDecoration.textDecorationType,
+                    textDecoration.startPosition, textDecoration.endPosition))
+            });
             let v = new TaskData(
                 d,
-                task.value,
+                task.text,
                 task.stars,
                 task.color,
-                task.bold,
-                task.strike,
-                task.underline,
-                task.italic
+                textDecorations
             );
             v.time = task.time;
             tabElements.push(v);
         })
+        // строка ниже вызывает конструктор который добавяет 
+        // новую вкладку в массив вкладок (и это не очень красиво)
         new Tab(tab.name, tabElements);
     });
     selectTab(0);
 }
+
+
 //сохранение
 function save() {
     window.localStorage.setItem("tasksData", JSON.stringify(tabs));
 }
+
+
 //для чтения
 function date(year, month, day) {
     return new Date(year, month, day, 0, 0, 0);
 }
+
 
 // динамическое расширение textarea
 function setDinamicalInputExpand() {
@@ -605,6 +667,7 @@ function setDinamicalInputExpand() {
     var textarea = document.getElementById("input_to_do");
     textarea.oninput = setCorrectTaskInputHeights;
 }
+
 
 function setCorrectTaskInputHeights() {
     var limit = 200;
