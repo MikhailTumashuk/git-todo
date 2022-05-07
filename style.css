@@ -1,10 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Comfortaa&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Rubik&display=swap");
-@import
-    "base",
-    "layout",
-    "syntax-highlighting",
-    "bootstrap";
 html {
     background: linear-gradient( 116.83deg, rgba(54, 255, 167, 0.2) 0.55%, rgba(229, 134, 206, 0.2) 100%), linear-gradient(179.06deg, #62ebc0 -5.97%, #5b46e7 125.73%);
 }
