@@ -76,7 +76,7 @@ class Tab {
         this.tasks.forEach(task => {
             task.uuid = i;
             this.displayTask(task)
-            // task.displayTask(tabs.findIndex( (tab) => tab == this));
+                // task.displayTask(tabs.findIndex( (tab) => tab == this));
             i++;
         });
         console.log('displaing tasks')
@@ -85,9 +85,11 @@ class Tab {
     // удаление заметки
     removeTask(uuid) {
         // удалить одну заметку по индексу uuid
-        this.tasks.splice(uuid, 1);
-        this.displayTasks();
-        save();
+        if (confirm("Удалить заметку?")) {
+            this.tasks.splice(uuid, 1);
+            this.displayTasks();
+            save();
+        }
     }
 
     // изменение звезд на заметке
@@ -109,7 +111,7 @@ class Tab {
         $("#tabs").append(context);
 
         // обработка нажатия на вкладку
-        $('#tab_' + this.uuid).mousedown(function (event) {
+        $('#tab_' + this.uuid).mousedown(function(event) {
             let uuid = this.getAttribute('uuid');
             switch (event.which) {
                 // если click
@@ -128,8 +130,8 @@ class Tab {
                         // если убрать static и вызывать через this то 
                         // почему то выдаётся this.renameTab() is not a function
                         Tab.renameTab(this)
-                        // $(this).replaceWith($('<input type="text" size="5">' + this.innerText));
-                        
+                            // $(this).replaceWith($('<input type="text" size="5">' + this.innerText));
+
                     } else {
                         selectTab(uuid);
                         // создаём запись в сессионное хранилище о времени клика на определённую
@@ -208,24 +210,24 @@ class Tab {
 
     static renameTab(tab) {
         var input = $('#input_to_do')
-        // этот аттрибут не даст ввести больше n символов в инпут
+            // этот аттрибут не даст ввести больше n символов в инпут
         input[0].setAttribute('maxlength', maxTabNameLength)
-        // добавляем в инпут прежнее название вкладки
+            // добавляем в инпут прежнее название вкладки
         input.val(tab.innerText)
-        // ставим курсор в конец инпута
+            // ставим курсор в конец инпута
         input.focus()
-        // когда нажимаем энтер или кликаем в любей место кроме инпута
-        input[0].onblur = function () {
+            // когда нажимаем энтер или кликаем в любей место кроме инпута
+        input[0].onblur = function() {
             let uuid = tab.getAttribute('uuid');
             // устанавливаем новое название экземпляру класса
             tabs[uuid].name = input.val()
-            // сохранить новое название в local storage
+                // сохранить новое название в local storage
             save()
-            // костыль для того чтобы можно было увидеть только что сохранённое название вкладки
+                // костыль для того чтобы можно было увидеть только что сохранённое название вкладки
             selectTab(selected)
             input.val('')
             input[0].setAttribute('maxlength', maxTaskLength)
-            // удаляем обработчик потери фокуса после инпута
+                // удаляем обработчик потери фокуса после инпута
             input[0].onblur = () => {}
         }
     }
@@ -298,11 +300,11 @@ const taskInInputField = new TaskData(new Date(), "", 1, 'black', false, false, 
 var selected = -1;
 
 //сетап
-$(document).ready(function () {
+$(document).ready(function() {
     load();
     selectTab(0);
     clickOnStar(3);
-    $(".round").map(function () {
+    $(".round").map(function() {
         this.style.background = this.getAttribute('color');
         // вроде то что снизу бесполезно
         // return this;
@@ -512,22 +514,26 @@ function getSelectionPositions() {
 //изменить форматирование
 function changeFont(i) {
     switch (i) {
-        case 0: {
-            taskInInputField.bold = !taskInInputField.bold;
-            break;
-        }
-        case 1: {
-            taskInInputField.strike = !taskInInputField.strike;
-            break;
-        }
-        case 2: {
-            taskInInputField.underline = !taskInInputField.underline;
-            break;
-        }
-        case 3: {
-            taskInInputField.italic = !taskInInputField.italic;
-            break;
-        }
+        case 0:
+            {
+                taskInInputField.bold = !taskInInputField.bold;
+                break;
+            }
+        case 1:
+            {
+                taskInInputField.strike = !taskInInputField.strike;
+                break;
+            }
+        case 2:
+            {
+                taskInInputField.underline = !taskInInputField.underline;
+                break;
+            }
+        case 3:
+            {
+                taskInInputField.italic = !taskInInputField.italic;
+                break;
+            }
     }
     updateTextArea();
 }
