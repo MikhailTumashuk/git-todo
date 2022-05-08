@@ -5,28 +5,15 @@ const tabs = [];
 // TODO: Пофиксить баг: если быстро перейти на одну вкладку и обратно система думает что был дабл клик
 // по вкладке
 // наложение вкладок
-// выделение слов как в вроде
-
-// https://www.sohamkamani.com/javascript/enums/
-// Enum. Статические члены класса не передаются его экземплярам. т.е. у TextDecoration.Bold 
-// нельзя вызвать TextDecoration.Bold.Bold, зато у них есть свойство-строка type.
-// Хотя эта строка не имеет значения
-// Пример использования
-// var tD =  TextDecoration.Bold
-// switch (tD) {
-//     case TextDecoration.Strike:
-//         console.log("stike hard")
-//         break;
-//     case TextDecoration.Bold:
-//         console.log("bold boy")
-//         break;
-// }
+// баг с ограничением ввода и цветом заднего фона
+// когда меняем название заметки то можно изменить цвет и начертание и тогда 
+// просто как будто нажали кнопку
+// баг с отсутствием переноса строки в поле ввода
 
 
 var maxTabNameLength = 20;
 var tabsMaxCount = 10;
 var maxTaskLength = 1000;
-
 
 // вкладка
 class Tab {
@@ -56,7 +43,6 @@ class Tab {
             // task.displayTask(tabs.findIndex( (tab) => tab == this));
             i++;
         });
-        console.log('displaing tasks')
     }
 
     // удаление заметки
@@ -173,22 +159,34 @@ class Tab {
     static renameTab(tab) {
         var input = $('#input_to_do')
         // этот аттрибут не даст ввести больше n символов в инпут
-        input[0].setAttribute('maxlength', maxTabNameLength)
+        setCKEditorMaxLength(maxTabNameLength)
         // добавляем в инпут прежнее название вкладки
-        input.val(tab.innerText)
+        window.editor.data.set(tab.innerText)
         // ставим курсор в конец инпута
-        input.focus()
+        window.editor.focus()
+        // ставим курсор в конец инпута
+        editor.model.change(writer => {
+            writer.setSelection(writer.createPositionAt(editor.model.document.getRoot(), 'end'));
+        });
         // когда нажимаем энтер или кликаем в любей место кроме инпута
         input[0].onblur = function () {
             let uuid = tab.getAttribute('uuid');
             // устанавливаем новое название экземпляру класса
-            tabs[uuid].name = input.val()
+
+            // получаем текст из инпута без тегов
+            var html = editor.data.get()
+            var dom = document.createElement("DIV");
+            dom.innerHTML = html;
+            var plain_text = (dom.textContent || dom.innerText);
+
+            tabs[uuid].name = plain_text;
+
             // сохранить новое название в local storage
             save()
             // костыль для того чтобы можно было увидеть только что сохранённое название вкладки
             selectTab(selected)
-            input.val('')
-            input[0].setAttribute('maxlength', maxTaskLength)
+            window.editor.data.set('')
+            setCKEditorMaxLength(maxTaskLength)
             // удаляем обработчик потери фокуса после инпута
             input[0].onblur = () => {}
         }
@@ -199,8 +197,7 @@ class Tab {
 //заметка
 class TaskData {
     //textDecorations - TextDecorationData[]
-    constructor(date, text, stars, color, textDecorations) {
-        //забей
+    constructor(date, text, stars) {
         this.uuid = 0;
         //год
         this.year = date.getFullYear();
@@ -214,8 +211,6 @@ class TaskData {
         this.text = text;
         //звезды
         this.stars = stars;
-        //форматирование
-        this.color = color;
     }
 
 
@@ -252,13 +247,17 @@ class TaskData {
         return 0;
     }
 }
+
+
 // упрощение обработки и хранения данных новой заметки
-const taskInInputField = new TaskData(new Date(), "", 1, 'black',)
+const taskInInputField = new TaskData(new Date(), "", 1)
 // текущая вкладка
 var selected = -1;
 
+
 //сетап
 $(document).ready(function () {
+    setCKEditorMaxLength(maxTaskLength)
     load();
     selectTab(0);
     clickOnStar(3);
@@ -268,8 +267,6 @@ $(document).ready(function () {
         // return this;
     });
     updateTextArea();
-    // ограничим ввод задачи. Максимальное кол-во символов.
-    $('#input_to_do')[0].setAttribute('maxlength', maxTaskLength)
 
     // каждой появляющейся кнопке (иконки доп настроек) 
     // при наведении на значок доп настроек задаём функцию показать 
@@ -322,6 +319,7 @@ $(document).ready(function () {
     setColorActions();
 });
 
+
 var settingsArea = document.getElementsByClassName("settings-buttons-container")[0];
 var popupMenu = document.getElementsByClassName("popup")[0];
 var inputPanel = document.getElementsByClassName("input-panel")[0];
@@ -332,19 +330,23 @@ settingsArea.onmouseover = () => {
     popupMenu.style.display = 'block';
 }
 
+
 settingsArea.onmouseout = () => {
     popupMenu.style.display = 'none';
 }
+
 
 // функция добавляется в html через js
 function removeTask(tabId, uuid) {
     tabs[tabId].removeTask(uuid)
 }
 
+
 //клик по звезде (id) на странице (tabId) в заметке (uuid)
 function clickOnStarElement(tabId, uuid, id) {
     tabs[tabId].clickOnStar(uuid, id)
 }
+
 
 function setColorActions() {
     var colorButtons = document.getElementsByClassName("round")
@@ -357,10 +359,13 @@ function setColorActions() {
             // тут нельзя просто так поставить переменную buttonColor
             // тк она скорее всего хотя в ней и строка явл-ся пер-ой ссылочного типа
             // и всем кнопкам даётся одна и та же ссылка на одно значение, по итогу - чёрный
-            editor.execute('fontColor', {value: `${colors[i]}`})
+            editor.execute('fontColor', {
+                value: `${colors[i]}`
+            })
         }
     }
 }
+
 
 // выбрать вкладку
 function selectTab(tabId) {
@@ -428,6 +433,7 @@ function deleteTab(uuid) {
     }
 }
 
+
 /** создание заметки */
 //звезда новой заметки
 function clickOnStar(id) {
@@ -453,15 +459,14 @@ function createTaskFromInput() {
     if (tabs.length == 0) {
         createTab();
     }
-    let inp = $('#input_to_do');
-    let text = inp.val();
-    if (text.length > 0) {
-        tabs[selected].tasks.push(new TaskData(new Date(), text, taskInInputField.stars,
-            taskInInputField.color, taskInInputField.textDecorations));
+
+    var taskTextWithDecorations = window.editor.data.get()
+    if (taskTextWithDecorations.length > 0) {
+        tabs[selected].tasks.push(new TaskData(new Date(), taskTextWithDecorations, taskInInputField.stars));
         tabs[selected].displayTasks();
         save();
     }
-    inp.val('');
+    window.editor.data.set('')
     setCorrectTaskInputHeights();
 }
 
@@ -531,14 +536,10 @@ function load() {
         let tabElements = [];
         tab.tasks.forEach((task) => {
             let d = date(task.year, task.month, task.day);
-            // две строки ниже нужны чтобы задать явно тип TextDecorationData
-            // вместа типа объект
-            let textDecorations = [];
             let v = new TaskData(
                 d,
                 task.text,
                 task.stars,
-                task.color,
             );
             v.time = task.time;
             tabElements.push(v);
@@ -590,7 +591,4 @@ function setCorrectTaskInputHeights() {
     var inputPanel = document.getElementsByClassName("input-panel")[0];
     var newHeight = Math.min(textarea.scrollHeight - 14, limit) + 57;
     inputPanel.style.height = newHeight + "px";
-    if (textarea.innerText.length > 1000) {
-        // textarea.innerText
-    }
 }

@@ -1,13 +1,20 @@
 
+var maxLength
+
+function setCKEditorMaxLength(maxLength) {
+    this.maxLength = maxLength
+}
+
 BalloonEditor
 .create(document.querySelector('.editor'), {
     licenseKey: '',
     // убрать тул бар
     toolbar: [],
     wordCount: {
+        // ограничим ввод
         onUpdate: stats => {
             var inputLength = stats.characters;
-            isLimitExceeded = inputLength > 1000;
+            isLimitExceeded = inputLength > maxLength;
             enter_btn.toggleAttribute( 'disabled', isLimitExceeded );
             if (isLimitExceeded)
                 input_to_do.style.background = 'lightcoral'
