@@ -133,8 +133,7 @@ class Tab {
         var context =
             `<div class="listElement" id="listElement_${task.uuid}">
             <span style="min-width: 9vh;" class="listElDate">${day}.${month}.${(task.year - 2000)}</span>
-            <span class="listElText" id="listElText${task.uuid}" 
-                style="min-width: 54vh; max-width: 54vh; color:${task.color}">
+            <span class="listElText" id="listElText${task.uuid}">
                 ${format}
             </span>
             <div class="listElStars">

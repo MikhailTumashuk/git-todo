@@ -303,8 +303,7 @@ h1 {
 .listElText {
     margin-right: 14px;
     word-wrap: break-word;
-    max-width: 66%;
-    /* на глаз тк по макету не понятно там разные зн-я всегда*/
+    flex-grow: 1;
 }
 
 .listElStars {
