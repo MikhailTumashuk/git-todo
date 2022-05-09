@@ -44,6 +44,8 @@ class Tab {
             // task.displayTask(tabs.findIndex( (tab) => tab == this));
             i++;
         });
+        // нужно обновить массив taskTexts
+        initTaskEdit()
     }
 
     // удаление заметки
