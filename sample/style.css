@@ -51,8 +51,13 @@ h1 {
     white-space: nowrap;
 }
 
+.tabs_item:not(:first-child) {
+    margin-left: -10px;
+}
+
 .tabs_selected {
     background: #ffffff;
+    z-index: 1001 !important;
 }
 
 .tabs_items {

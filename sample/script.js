@@ -63,7 +63,7 @@ class Tab {
     // кнопка со вкладкой
     createTab(selected) {
         var context = `
-        <button  id="tab_${this.uuid}" uuid=${this.uuid} 
+        <button  id="tab_${this.uuid}" uuid=${this.uuid} style="z-index: ${1000 - this.uuid};"
         class="tabs_item${selected ? ' tabs_selected': ''}">
             <p class="tab_text${selected ? " tab_selected_text" : ""}">
                 ${this.name}
