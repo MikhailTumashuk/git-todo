@@ -427,6 +427,30 @@ function setColorActions() {
 }
 
 
+//изменить форматирование
+function changeFont(i) {
+    switch (i) {
+        case 0: {
+            editor.commands.get("bold").execute()
+            break;
+        }
+        case 1: {
+            editor.commands.get("strikethrough").execute()
+            break;
+        }
+        case 2: {
+            editor.commands.get("underline").execute()
+            break;
+        }
+        case 3: {
+            editor.commands.get("italic").execute()
+            break;
+        }
+    }
+    updateTextArea();
+}
+
+
 // выбрать вкладку
 function selectTab(tabId) {
     $("#tabs").html("");
