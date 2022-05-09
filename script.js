@@ -47,10 +47,12 @@ class Tab {
 
     // удаление заметки
     removeTask(uuid) {
-        // удалить одну заметку по индексу uuid
-        this.tasks.splice(uuid, 1);
-        this.displayTasks();
-        save();
+        if (confirm("Удалить заметку?")) {
+            // удалить одну заметку по индексу uuid
+            this.tasks.splice(uuid, 1);
+            this.displayTasks();
+            save();
+        }
     }
 
     // изменение звезд на заметке
