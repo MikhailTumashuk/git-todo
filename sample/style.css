@@ -51,8 +51,13 @@ h1 {
     white-space: nowrap;
 }
 
+.tabs_item:not(:first-child) {
+    margin-left: -10px;
+}
+
 .tabs_selected {
     background: #ffffff;
+    z-index: 1001 !important;
 }
 
 .tabs_items {
@@ -226,7 +231,7 @@ h1 {
     font-weight: 500;
     font-size: 22px;
     line-height: 25px;
-    color: rgba(52, 58, 63, 0.64);
+    /* color: rgba(52, 58, 63, 0.64); */
     border: 2px solid #72bbfe;
     border-top-left-radius: 10px;
     border-bottom-left-radius: 10px;
