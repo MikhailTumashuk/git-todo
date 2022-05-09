@@ -4,12 +4,13 @@ const tabs = [];
 
 // TODO: Пофиксить баг: если быстро перейти на одну вкладку и обратно система думает что был дабл клик
 // по вкладке
-// наложение вкладок
 // баг с ограничением ввода и цветом заднего фона
 // когда меняем название заметки то можно изменить цвет и начертание и тогда 
 // просто как будто нажали кнопку
 // баг с отсутствием переноса строки в поле ввода
-
+// TODO fix star edit
+// пофиксить баг когда переименовываешь таску и текст в инпуте а ты делаешь дабл клин на другую
+// таксу и ничего не происходит в плане ренейма
 
 var maxTabNameLength = 20;
 var tabsMaxCount = 10;
@@ -158,40 +159,53 @@ class Tab {
     }
 
     static renameTab(tab) {
-        var input = $('#input_to_do')
-        // этот аттрибут не даст ввести больше n символов в инпут
-        setCKEditorMaxLength(maxTabNameLength)
-        // добавляем в инпут прежнее название вкладки
-        window.editor.data.set(tab.innerText)
-        // ставим курсор в конец инпута
-        window.editor.focus()
-        // ставим курсор в конец инпута
-        editor.model.change(writer => {
-            writer.setSelection(writer.createPositionAt(editor.model.document.getRoot(), 'end'));
-        });
-        // когда нажимаем энтер или кликаем в любей место кроме инпута
-        input[0].onblur = function () {
-            let uuid = tab.getAttribute('uuid');
-            // устанавливаем новое название экземпляру класса
+        changeTextWithInputField(tab.innerText, maxTabNameLength,
+            (inputResult) => {
+                let uuid = tab.getAttribute('uuid');
+                tabs[uuid].name = getPlainText(inputResult)
+                // сохранить новое название в local storage
+                save()
+                // костыль для того чтобы можно было увидеть только что сохранённое название вкладки
+                selectTab(selected)
+            }
+        )
+    }
+}
 
-            // получаем текст из инпута без тегов
-            var html = editor.data.get()
-            var dom = document.createElement("DIV");
-            dom.innerHTML = html;
-            var plain_text = (dom.textContent || dom.innerText);
 
-            tabs[uuid].name = plain_text;
+function changeTextWithInputField(text, maxLength, callback) {
+    var input = $('#input_to_do')
+    // этот аттрибут не даст ввести больше n символов в инпут
+    setCKEditorMaxLength(maxLength)
+    // добавляем в инпут прежнее название вкладки
+    window.editor.data.set(text)
+    // ставим курсор в конец инпута
+    window.editor.focus()
+    // ставим курсор в конец инпута
+    editor.model.change(writer => {
+        writer.setSelection(writer.createPositionAt(editor.model.document.getRoot(), 'end'));
+    });
+    // когда нажимаем энтер или кликаем в любей место кроме инпута
+    input[0].onblur = function () {
+        // получаем текст из инпута без тегов
+        var htmlText = editor.data.get()
 
-            // сохранить новое название в local storage
-            save()
-            // костыль для того чтобы можно было увидеть только что сохранённое название вкладки
-            selectTab(selected)
+        if (htmlText.length > 0) {
             window.editor.data.set('')
             setCKEditorMaxLength(maxTaskLength)
             // удаляем обработчик потери фокуса после инпута
             input[0].onblur = () => {}
+            callback(htmlText)
         }
     }
+}
+
+
+function getPlainText(htmlText) {
+    var dom = document.createElement("DIV");
+    dom.innerHTML = htmlText;
+    var plain_text = (dom.textContent || dom.innerText);
+    return plain_text;
 }
 
 
@@ -318,7 +332,52 @@ $(document).ready(function () {
     // JS находит на странице элемент с id enter_btn
     enter_btn.onclick = createTaskFromInput;
     setColorActions();
+    initTaskEdit()
+
 });
+
+
+// TODO fix star edit
+function initTaskEdit() {
+    // добавим возможность редактирования текстов заметок
+    var taskTexts = document.querySelectorAll(".listElText");
+    for (let index = 0; index < taskTexts.length; index++) {
+        var taskText = taskTexts[index]
+        taskText.onclick = function (event) {
+            switch (event.which) {
+                // если click
+                case 1:
+                    // обрабатываем дабл клик
+                    var now = new Date().getTime();
+                    var lastClicked = sessionStorage.getItem('task ' + index);
+                    // console.log(sessionStorage)
+                    if (lastClicked && (now - lastClicked < 450)) {
+                        event.preventDefault(); // отменить стандартное действие
+                        console.log('db click')
+                        // устанавливаем в инпут филд кол-во звёзд таск
+                        clickOnStar(tabs[selected].tasks[index].stars)
+                        changeTextWithInputField(taskTexts[index].innerHTML, maxTaskLength,
+                            (inputResult) => {
+                                tabs[selected].tasks[index].text = inputResult
+                                tabs[selected].tasks[index].stars = taskInInputField.stars
+
+                                save()
+                                tabs[selected].displayTasks();
+                                setCorrectTaskInputHeights();
+                                // нужно обновить массив taskTexts
+                                initTaskEdit()
+                            }
+                        )
+                    } else {
+                        // создаём запись в сессионное хранилище о времени клика на определённую
+                        // вкладку
+                        sessionStorage.setItem('task ' + index, now.toString())
+                    }
+                    break;
+            }
+        };
+    }
+}
 
 
 var settingsArea = document.getElementsByClassName("settings-buttons-container")[0];
@@ -469,30 +528,6 @@ function createTaskFromInput() {
     }
     window.editor.data.set('')
     setCorrectTaskInputHeights();
-}
-
-
-//изменить форматирование
-function changeFont(i) {
-    switch (i) {
-        case 0: {
-            editor.commands.get("bold").execute()
-            break;
-        }
-        case 1: {
-            editor.commands.get("strikethrough").execute()
-            break;
-        }
-        case 2: {
-            editor.commands.get("underline").execute()
-            break;
-        }
-        case 3: {
-            editor.commands.get("italic").execute()
-            break;
-        }
-    }
-    updateTextArea();
 }
 
 
