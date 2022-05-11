@@ -43,7 +43,7 @@ h1 {
     border-right: 2px solid #7f9bfd;
     border-left: 2px solid #7f9bfd;
     border-radius: 20px 50px 0 0;
-    width: 290px;
+    width: 180px;
     height: 46px;
     text-align: center;
     z-index: 1;
@@ -53,6 +53,10 @@ h1 {
 
 .tabs_item:not(:first-child) {
     margin-left: -10px;
+}
+
+.overflow {
+    background-color: lightcoral !important;
 }
 
 .tabs_selected {
