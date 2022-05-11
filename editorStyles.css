@@ -30,7 +30,7 @@ main .ck-editor[role='application'] .ck.ck-content,
 /* Inline & Balloon build. */
 .ck.editor[role='textbox'] {
 	width: 100%;
-	background: #fff;
+	background: rgb(255, 255, 255);
 	font-size: 1em;
 	line-height: 1.6em;
 	min-height: var(--ck-sample-editor-min-height);

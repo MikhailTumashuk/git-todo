@@ -5,12 +5,6 @@ const tabs = [];
 // TODO: Пофиксить баг: если быстро перейти на одну вкладку и обратно система думает что был дабл клик
 // по вкладке
 // баг с ограничением ввода и цветом заднего фона
-// когда меняем название заметки то можно изменить цвет и начертание и тогда 
-// просто как будто нажали кнопку
-// баг с отсутствием переноса строки в поле ввода
-// TODO fix star edit
-// пофиксить баг когда переименовываешь таску и текст в инпуте а ты делаешь дабл клин на другую
-// таксу и ничего не происходит в плане ренейма
 
 var maxTabNameLength = 20;
 var tabsMaxCount = 10;
@@ -187,16 +181,15 @@ function changeTextWithInputField(text, maxLength, callback) {
     editor.model.change(writer => {
         writer.setSelection(writer.createPositionAt(editor.model.document.getRoot(), 'end'));
     });
-    // когда нажимаем энтер или кликаем в любей место кроме инпута
-    input[0].onblur = function () {
+    // JS находит на странице элемент с id enter_btn
+    enter_btn.onclick = function () {
         // получаем текст из инпута без тегов
         var htmlText = editor.data.get()
-
         if (htmlText.length > 0) {
             window.editor.data.set('')
             setCKEditorMaxLength(maxTaskLength)
-            // удаляем обработчик потери фокуса после инпута
-            input[0].onblur = () => {}
+            // Возвращаем стандартное поведение клавиши энтер
+            enter_btn.onclick = createTaskFromInput;
             callback(htmlText)
         }
     }
@@ -335,7 +328,6 @@ $(document).ready(function () {
     enter_btn.onclick = createTaskFromInput;
     setColorActions();
     initTaskEdit()
-
 });
 
 
@@ -357,7 +349,7 @@ function initTaskEdit() {
                         event.preventDefault(); // отменить стандартное действие
                         console.log('db click')
                         // устанавливаем в инпут филд кол-во звёзд таск
-                        clickOnStar(tabs[selected].tasks[index].stars)
+                        // clickOnStar(tabs[selected].tasks[index].stars)
                         changeTextWithInputField(taskTexts[index].innerHTML, maxTaskLength,
                             (inputResult) => {
                                 tabs[selected].tasks[index].text = inputResult
@@ -557,6 +549,7 @@ function createTaskFromInput() {
 }
 
 
+// удалить
 //форматирование поле ввода
 function updateTextArea() {
     let inp = $('#input_to_do');
@@ -653,4 +646,31 @@ function setCorrectTaskInputHeights() {
     var inputPanel = document.getElementsByClassName("input-panel")[0];
     var newHeight = Math.min(textarea.scrollHeight - 14, limit) + 57;
     inputPanel.style.height = newHeight + "px";
+
+
+    var inputLength = CKEditorStats.characters;
+    var str = input_to_do.innerText;
+    var spacesCount = inputLength - str.replace(/\s+/g, '').length;
+    isLimitExceeded = (inputLength - spacesCount) > maxLength;
+    enter_btn.toggleAttribute('disabled', isLimitExceeded);
+
+    var editor = document.querySelector(".editor__editable, main .ck-editor[role='application'] .ck.ck-content, .ck.editor__editable[role='textbox'], .ck.ck-editor__editable[role='textbox'], .ck.editor[role='textbox']")
+    if (isLimitExceeded) {
+        editor.classList.add('overflow');
+    } else {
+        editor.classList.remove('overflow');
+    }
+    // editor drops our class on blur so we get it back
+    editor.onblur = () => {
+        setTimeout(() => {
+            if (isLimitExceeded) {
+                editor.classList.add('overflow');
+            }
+        }, 10);
+    }
+    editor.onclick = () => {
+        if (isLimitExceeded) {
+            editor.classList.add('overflow');
+        }
+    }
 }
