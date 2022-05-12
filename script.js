@@ -654,6 +654,12 @@ function setCorrectTaskInputHeights() {
     isLimitExceeded = (inputLength - spacesCount) > maxLength;
     enter_btn.toggleAttribute('disabled', isLimitExceeded);
 
+    
+
+    console.log(isLimitExceeded)
+
+
+
     var editor = document.querySelector(".editor__editable, main .ck-editor[role='application'] .ck.ck-content, .ck.editor__editable[role='textbox'], .ck.ck-editor__editable[role='textbox'], .ck.editor[role='textbox']")
     if (isLimitExceeded) {
         editor.classList.add('overflow');
