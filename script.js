@@ -273,10 +273,7 @@ $(document).ready(function () {
     clickOnStar(3);
     $(".round").map(function () {
         this.style.background = this.getAttribute('color');
-        // вроде то что снизу бесполезно
-        // return this;
     });
-    updateTextArea();
 
     // каждой появляющейся кнопке (иконки доп настроек) 
     // при наведении на значок доп настроек задаём функцию показать 
@@ -357,7 +354,7 @@ function initTaskEdit() {
 
                                 save()
                                 tabs[selected].displayTasks();
-                                setCorrectTaskInputHeights();
+                                setCorrectTaskInputHeightsAndLength();
                                 // нужно обновить массив taskTexts
                                 initTaskEdit()
                             }
@@ -441,7 +438,6 @@ function changeFont(i) {
             break;
         }
     }
-    updateTextArea();
 }
 
 
@@ -545,38 +541,7 @@ function createTaskFromInput() {
         save();
     }
     window.editor.data.set('')
-    setCorrectTaskInputHeights();
-}
-
-
-// удалить
-//форматирование поле ввода
-function updateTextArea() {
-    let inp = $('#input_to_do');
-    inp.css('color', taskInInputField.color);
-    if (taskInInputField.bold) {
-        inp.css('font-weight', 'bold');
-    } else {
-        inp.css('font-weight', '');
-    }
-
-    let decoration = '';
-    if (taskInInputField.strike && taskInInputField.underline) {
-        decoration = 'line-through underline';
-    }
-    if (!taskInInputField.strike && taskInInputField.underline) {
-        decoration = 'underline';
-    }
-    if (taskInInputField.strike && !taskInInputField.underline) {
-        decoration = 'line-through';
-    }
-    inp.css('text-decoration', decoration);
-
-    if (taskInInputField.italic) {
-        inp.css('font-style', 'italic');
-    } else {
-        inp.css('font-style', '');
-    }
+    setCorrectTaskInputHeightsAndLength();
 }
 
 
@@ -621,23 +586,20 @@ function date(year, month, day) {
 
 // динамическое расширение textarea
 function setDinamicalInputExpand() {
-    // в user_input и inputPanel ещё нужно поставить : align-items: end
-    var textarea = document.getElementById("input_to_do");
-    // textarea.oninput = setCorrectTaskInputHeights;
     var myElement = document.getElementById("input_to_do");
     if (window.addEventListener) {
         // Normal browsers
-        myElement.addEventListener('DOMSubtreeModified', setCorrectTaskInputHeights, false);
+        myElement.addEventListener('DOMSubtreeModified', setCorrectTaskInputHeightsAndLength, false);
     } else
     if (window.attachEvent) {
         // IE
-        myElement.attachEvent('DOMSubtreeModified', setCorrectTaskInputHeights);
+        myElement.attachEvent('DOMSubtreeModified', setCorrectTaskInputHeightsAndLength);
     }
 
 }
 
 
-function setCorrectTaskInputHeights() {
+function setCorrectTaskInputHeightsAndLength() {
     var limit = 200;
     var textarea = document.getElementById("input_to_do");
     textarea.style.height = "62px";
@@ -647,17 +609,15 @@ function setCorrectTaskInputHeights() {
     var newHeight = Math.min(textarea.scrollHeight - 14, limit) + 57;
     inputPanel.style.height = newHeight + "px";
 
+    setMaxInputLength()
+}
 
+function setMaxInputLength() {
     var inputLength = CKEditorStats.characters;
     var str = input_to_do.innerText;
     var spacesCount = inputLength - str.replace(/\s+/g, '').length;
     isLimitExceeded = (inputLength - spacesCount) > maxLength;
     enter_btn.toggleAttribute('disabled', isLimitExceeded);
-
-    
-
-    console.log(isLimitExceeded)
-
 
 
     var editor = document.querySelector(".editor__editable, main .ck-editor[role='application'] .ck.ck-content, .ck.editor__editable[role='textbox'], .ck.ck-editor__editable[role='textbox'], .ck.editor[role='textbox']")
@@ -665,18 +625,5 @@ function setCorrectTaskInputHeights() {
         editor.classList.add('overflow');
     } else {
         editor.classList.remove('overflow');
-    }
-    // editor drops our class on blur so we get it back
-    editor.onblur = () => {
-        setTimeout(() => {
-            if (isLimitExceeded) {
-                editor.classList.add('overflow');
-            }
-        }, 10);
-    }
-    editor.onclick = () => {
-        if (isLimitExceeded) {
-            editor.classList.add('overflow');
-        }
     }
 }

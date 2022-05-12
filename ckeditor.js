@@ -12,33 +12,7 @@ BalloonEditor
     toolbar: [],
         wordCount: {
             onUpdate: stats => {
-                // var inputLength = stats.characters;
-                // var str = input_to_do.innerText;
-                // var spacesCount = inputLength - str.replace(/\s+/g, '').length;
-                // isLimitExceeded = (inputLength - spacesCount) > maxLength;
                 CKEditorStats = stats
-
-                // enter_btn.toggleAttribute('disabled', isLimitExceeded);
-
-                // var editor = document.querySelector(".editor__editable, main .ck-editor[role='application'] .ck.ck-content, .ck.editor__editable[role='textbox'], .ck.ck-editor__editable[role='textbox'], .ck.editor[role='textbox']")
-                // if (isLimitExceeded) {
-                //     editor.classList.add('overflow');
-                // } else {
-                //     editor.classList.remove('overflow');
-                // }
-                // // editor drops our class on blur so we get it back
-                // editor.onblur = () => {
-                //     setTimeout(() => {
-                //         if (isLimitExceeded) {
-                //             editor.classList.add('overflow');
-                //         }
-                //     }, 10);
-                // }
-                // editor.onclick = () => {
-                //     if (isLimitExceeded) {
-                //         editor.classList.add('overflow');
-                //     }
-                // }
             }
         }
     })
