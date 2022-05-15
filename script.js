@@ -103,7 +103,7 @@ class Tab {
                     break;
                     // если right click
                 case 3:
-                    let confir = confirm('Удалить вкладку ' + this.firstChild.innerHTML);
+                    let confir = confirm('Удалить вкладку "' + tabs[uuid].name + '"?');
                     if (confir) {
                         deleteTab(uuid);
                     }
